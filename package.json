@@ -11,6 +11,8 @@
     "check": "biome check --write ."
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "jose": "^6.2.3",
     "next": "16.2.7",
     "react": "19.2.4",
     "react-dom": "19.2.4",
@@ -19,6 +21,7 @@
   "devDependencies": {
     "@biomejs/biome": "^2.4.16",
     "@tailwindcss/postcss": "^4",
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

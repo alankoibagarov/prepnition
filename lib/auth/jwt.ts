@@ -1,0 +1,78 @@
+import { jwtVerify, SignJWT } from "jose";
+import type { RefreshTokenPayload, TokenPayload } from "@/types/auth";
+import { ACCESS_TOKEN_TTL, REFRESH_TOKEN_TTL } from "./constants";
+
+function getAccessSecret(): Uint8Array {
+  const secret = process.env.JWT_ACCESS_SECRET;
+  if (!secret || secret.length < 32) {
+    throw new Error("JWT_ACCESS_SECRET must be set and at least 32 characters");
+  }
+  return new TextEncoder().encode(secret);
+}
+
+function getRefreshSecret(): Uint8Array {
+  const secret = process.env.JWT_REFRESH_SECRET;
+  if (!secret || secret.length < 32) {
+    throw new Error(
+      "JWT_REFRESH_SECRET must be set and at least 32 characters",
+    );
+  }
+  return new TextEncoder().encode(secret);
+}
+
+export async function signAccessToken(payload: TokenPayload): Promise<string> {
+  return new SignJWT({
+    email: payload.email,
+    role: payload.role,
+  })
+    .setProtectedHeader({ alg: "HS256" })
+    .setSubject(payload.sub)
+    .setIssuedAt()
+    .setExpirationTime(ACCESS_TOKEN_TTL)
+    .sign(getAccessSecret());
+}
+
+export async function signRefreshToken(userId: string): Promise<string> {
+  return new SignJWT({})
+    .setProtectedHeader({ alg: "HS256" })
+    .setSubject(userId)
+    .setIssuedAt()
+    .setExpirationTime(REFRESH_TOKEN_TTL)
+    .sign(getRefreshSecret());
+}
+
+export async function verifyAccessToken(
+  token: string,
+): Promise<TokenPayload | null> {
+  try {
+    const { payload } = await jwtVerify(token, getAccessSecret());
+    if (
+      typeof payload.sub !== "string" ||
+      typeof payload.email !== "string" ||
+      (payload.role !== "user" && payload.role !== "admin")
+    ) {
+      return null;
+    }
+    return {
+      sub: payload.sub,
+      email: payload.email,
+      role: payload.role,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export async function verifyRefreshToken(
+  token: string,
+): Promise<RefreshTokenPayload | null> {
+  try {
+    const { payload } = await jwtVerify(token, getRefreshSecret());
+    if (typeof payload.sub !== "string") {
+      return null;
+    }
+    return { sub: payload.sub };
+  } catch {
+    return null;
+  }
+}
