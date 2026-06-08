@@ -74,6 +74,45 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+## Docker
+
+SQLite is embedded in the application (not a separate container). A named Docker volume (`sqlite-data`) persists the database file at `/data/app.db` inside the container.
+
+### Prerequisites
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (or Docker Engine + Compose)
+
+### Setup
+
+1. Ensure `.env.local` exists with JWT secrets (see setup above).
+
+2. Start in **development** mode (hot reload, source bind-mounted):
+
+```bash
+npm run docker:dev
+```
+
+3. Start in **production** mode (optimized image, no source mount):
+
+```bash
+npm run docker:prod
+```
+
+4. Stop containers:
+
+```bash
+npm run docker:down
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+| File | Purpose |
+| --- | --- |
+| `Dockerfile.dev` | Development image with native SQLite bindings |
+| `Dockerfile` | Multi-stage production image (Next.js standalone) |
+| `docker-compose.yml` | Dev (`--profile dev`) and prod (`--profile prod`) services |
+| `docker/entrypoint.sh` | Ensures `/data` exists, runs Prisma generate/migrate |
+
 ## Scripts
 
 | Command | Description |
@@ -88,6 +127,9 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | `npm run db:push` | Sync schema to SQLite during early development |
 | `npm run db:migrate` | Create versioned migrations once models exist |
 | `npm run db:studio` | Open Prisma Studio to browse the database |
+| `npm run docker:dev` | Build and run the app in Docker (development) |
+| `npm run docker:prod` | Build and run the app in Docker (production) |
+| `npm run docker:down` | Stop Docker containers |
 
 ## Project Structure
 
@@ -99,6 +141,10 @@ lib/prisma.ts     # Prisma client singleton for server-side database access
 prisma/           # Prisma schema and SQLite database files
 prisma.config.ts  # Prisma CLI configuration (database URL, migrations path)
 generated/        # Generated Prisma client (run `npm run db:generate`)
+docker/           # Docker entrypoint scripts
 types/            # Shared TypeScript types
 proxy.ts          # Middleware for protected routes and API endpoints
+Dockerfile        # Production Docker image
+Dockerfile.dev    # Development Docker image
+docker-compose.yml
 ```

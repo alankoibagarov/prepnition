@@ -12,7 +12,10 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "docker:dev": "docker compose --profile dev up --build",
+    "docker:prod": "docker compose --profile prod up --build",
+    "docker:down": "docker compose --profile dev --profile prod down"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",

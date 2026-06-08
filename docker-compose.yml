@@ -1,0 +1,39 @@
+services:
+  app-dev:
+    profiles: [dev]
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.local
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: file:/data/app.db
+    volumes:
+      - .:/app
+      - /app/.next  
+      - node_modules:/app/node_modules
+      - sqlite-data:/data
+    restart: unless-stopped
+
+  app-prod:
+    profiles: [prod]
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.local
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: file:/data/app.db
+    volumes:
+      - sqlite-data:/data
+    restart: unless-stopped
+
+volumes:
+  node_modules:
+  sqlite-data:
