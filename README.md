@@ -1,36 +1,86 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PrepNition
+
+A smart analytics application, intended to improve interview performance
+
+## Tech Stack
+
+### Core
+
+| Layer | Technology |
+| --- | --- |
+| Framework | [Next.js 16](https://nextjs.org) (App Router) |
+| Language | [TypeScript 5](https://www.typescriptlang.org) |
+| UI | [React 19](https://react.dev) |
+| Styling | [Tailwind CSS 4](https://tailwindcss.com) |
+| Fonts | [Geist](https://vercel.com/font) via `next/font` |
+
+### State & Data
+
+| Layer | Technology |
+| --- | --- |
+| Client state | [Zustand](https://zustand.docs.pmnd.rs) |
+
+### Authentication
+
+| Layer | Technology |
+| --- | --- |
+| JWT | [jose](https://github.com/panva/jose) (HS256 access & refresh tokens) |
+| Password hashing | [bcryptjs](https://github.com/dcodeIO/bcrypt.js) |
+| Session storage | HTTP-only cookies |
+| Route protection | Next.js proxy middleware (`proxy.ts`) |
+
+### Tooling
+
+| Layer | Technology |
+| --- | --- |
+| Linting & formatting | [Biome](https://biomejs.dev) |
+| CSS processing | PostCSS with `@tailwindcss/postcss` |
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 20+
+- npm (or another package manager)
+
+### Setup
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Copy the environment template and set JWT secrets (32+ characters each):
+
+```bash
+cp .env.local.example .env.local
+```
+
+3. Start the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Start the development server |
+| `npm run build` | Create a production build |
+| `npm run start` | Serve the production build |
+| `npm run lint` | Run Biome checks |
+| `npm run format` | Format code with Biome |
+| `npm run check` | Run Biome checks and apply safe fixes |
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+app/              # App Router pages, API routes, and components
+lib/auth/         # Authentication utilities (JWT, cookies, sessions, permissions)
+types/            # Shared TypeScript types
+proxy.ts          # Middleware for protected routes and API endpoints
+```
