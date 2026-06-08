@@ -21,6 +21,7 @@ A smart analytics application, intended to improve interview performance
 | Layer | Technology |
 | --- | --- |
 | Client state | [Zustand](https://zustand.docs.pmnd.rs) |
+| Database | [Prisma](https://www.prisma.io) + SQLite |
 
 ### Authentication
 
@@ -59,7 +60,13 @@ npm install
 cp .env.local.example .env.local
 ```
 
-3. Start the development server:
+3. Generate the Prisma client:
+
+```bash
+npm run db:generate
+```
+
+4. Start the development server:
 
 ```bash
 npm run dev
@@ -77,6 +84,10 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 | `npm run lint` | Run Biome checks |
 | `npm run format` | Format code with Biome |
 | `npm run check` | Run Biome checks and apply safe fixes |
+| `npm run db:generate` | Regenerate Prisma client after schema changes |
+| `npm run db:push` | Sync schema to SQLite during early development |
+| `npm run db:migrate` | Create versioned migrations once models exist |
+| `npm run db:studio` | Open Prisma Studio to browse the database |
 
 ## Project Structure
 
@@ -84,6 +95,10 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 app/              # App Router pages, API routes, and app-specific components
 components/ui/    # Shadcn UI primitives (add via `npx shadcn@latest add <component>`)
 lib/auth/         # Authentication utilities (JWT, cookies, sessions, permissions)
+lib/prisma.ts     # Prisma client singleton for server-side database access
+prisma/           # Prisma schema and SQLite database files
+prisma.config.ts  # Prisma CLI configuration (database URL, migrations path)
+generated/        # Generated Prisma client (run `npm run db:generate`)
 types/            # Shared TypeScript types
 proxy.ts          # Middleware for protected routes and API endpoints
 ```
