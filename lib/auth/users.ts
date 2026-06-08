@@ -1,53 +1,73 @@
 import bcrypt from "bcryptjs";
-import type { AuthUser } from "@/types/auth";
+import type { AuthUser, Role } from "@/types/auth";
+import { prisma } from "@/lib/prisma";
 
-// TODO: swap for DB-backed user store (e.g. Prisma adapter)
-type StoredUser = AuthUser & {
+export type StoredUser = AuthUser & {
   passwordHash: string;
 };
 
-const DEMO_PASSWORD = "password";
+/**
+ * Find user by email, excluding soft-deleted users
+ */
+export async function findUserByEmail(email: string): Promise<AuthUser | null> {
+  const user = await prisma.user.findFirst({
+    where: {
+      email: email.toLowerCase(),
+      deletedAt: null,
+    },
+  });
 
-const demoUsers: StoredUser[] = [
-  {
-    id: "1",
-    email: "user@demo.com",
-    role: "user",
-    passwordHash: bcrypt.hashSync(DEMO_PASSWORD, 10),
-  },
-  {
-    id: "2",
-    email: "admin@demo.com",
-    role: "admin",
-    passwordHash: bcrypt.hashSync(DEMO_PASSWORD, 10),
-  },
-];
-
-export function findUserByEmail(email: string): AuthUser | null {
-  const user = demoUsers.find(
-    (entry) => entry.email.toLowerCase() === email.toLowerCase(),
-  );
   if (!user) {
     return null;
   }
-  return { id: user.id, email: user.email, role: user.role };
+
+  return {
+    id: user.id,
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    role: user.role as Role,
+  };
 }
 
-export function findUserById(id: string): AuthUser | null {
-  const user = demoUsers.find((entry) => entry.id === id);
+/**
+ * Find user by ID, excluding soft-deleted users
+ */
+export async function findUserById(id: string): Promise<AuthUser | null> {
+  const user = await prisma.user.findFirst({
+    where: {
+      id,
+      deletedAt: null,
+    },
+  });
+
   if (!user) {
     return null;
   }
-  return { id: user.id, email: user.email, role: user.role };
+
+  return {
+    id: user.id,
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    role: user.role as Role,
+  };
 }
 
+/**
+ * Validate user credentials (email and password)
+ */
 export async function validateCredentials(
   email: string,
   password: string,
 ): Promise<AuthUser | null> {
-  const user = demoUsers.find(
-    (entry) => entry.email.toLowerCase() === email.toLowerCase(),
-  );
+  const user = await prisma.user.findFirst({
+    where: {
+      email: email.toLowerCase(),
+      deletedAt: null,
+    },
+  });
+
   if (!user) {
     return null;
   }
@@ -57,5 +77,102 @@ export async function validateCredentials(
     return null;
   }
 
-  return { id: user.id, email: user.email, role: user.role };
+  return {
+    id: user.id,
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    role: user.role as Role,
+  };
+}
+
+/**
+ * Create a new user with hashed password
+ */
+export async function createUser(
+  email: string,
+  password: string,
+  firstName: string,
+  lastName: string,
+  role: Role = "user",
+): Promise<AuthUser> {
+  const passwordHash = await bcrypt.hash(password, 10);
+
+  const user = await prisma.user.create({
+    data: {
+      email,
+      firstName,
+      lastName,
+      passwordHash,
+      role,
+    },
+  });
+
+  return {
+    id: user.id,
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    role: user.role as Role,
+  };
+}
+
+/**
+ * Get user by session token
+ */
+export async function getUserBySessionToken(
+  sessionToken: string,
+): Promise<AuthUser | null> {
+  const session = await prisma.session.findUnique({
+    where: { sessionToken },
+    include: { user: true },
+  });
+
+  if (!session || session.expiresAt < new Date() || session.user.deletedAt) {
+    return null;
+  }
+
+  return {
+    id: session.user.id,
+    email: session.user.email,
+    firstName: session.user.firstName,
+    lastName: session.user.lastName,
+    role: session.user.role as Role,
+  };
+}
+
+/**
+ * Create a session for a user
+ */
+export async function createSession(
+  userId: string,
+  expiresAt: Date,
+): Promise<string> {
+  const sessionToken = generateSessionToken();
+
+  await prisma.session.create({
+    data: {
+      userId,
+      sessionToken,
+      expiresAt,
+    },
+  });
+
+  return sessionToken;
+}
+
+/**
+ * Delete a session by token
+ */
+export async function deleteSessionByToken(sessionToken: string): Promise<void> {
+  await prisma.session.deleteMany({
+    where: { sessionToken },
+  });
+}
+
+/**
+ * Generate a random session token
+ */
+function generateSessionToken(): string {
+  return require("crypto").randomBytes(32).toString("hex");
 }

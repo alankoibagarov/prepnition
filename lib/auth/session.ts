@@ -1,24 +1,16 @@
 import { redirect } from "next/navigation";
 import type { AuthUser } from "@/types/auth";
 import { getAccessToken } from "./cookies";
-import { verifyAccessToken } from "./jwt";
+import { getUserBySessionToken } from "./users";
 
 export async function getSession(): Promise<AuthUser | null> {
-  const accessToken = await getAccessToken();
-  if (!accessToken) {
+  const sessionToken = await getAccessToken();
+  if (!sessionToken) {
     return null;
   }
 
-  const payload = await verifyAccessToken(accessToken);
-  if (!payload) {
-    return null;
-  }
-
-  return {
-    id: payload.sub,
-    email: payload.email,
-    role: payload.role,
-  };
+  const user = await getUserBySessionToken(sessionToken);
+  return user;
 }
 
 export async function requireAuth(): Promise<AuthUser> {

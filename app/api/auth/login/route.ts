@@ -3,9 +3,8 @@ import {
   jsonResponse,
   unauthorizedResponse,
 } from "@/lib/auth/api";
-import { setAuthCookies } from "@/lib/auth/cookies";
-import { signAccessToken, signRefreshToken } from "@/lib/auth/jwt";
-import { validateCredentials } from "@/lib/auth/users";
+import { setAccessCookie, clearAuthCookies } from "@/lib/auth/cookies";
+import { validateCredentials, createSession } from "@/lib/auth/users";
 
 type LoginBody = {
   email?: string;
@@ -32,14 +31,12 @@ export async function POST(request: Request) {
     return unauthorizedResponse("Invalid email or password");
   }
 
-  const accessToken = await signAccessToken({
-    sub: user.id,
-    email: user.email,
-    role: user.role,
-  });
-  const refreshToken = await signRefreshToken(user.id);
+  // Create session that expires in 7 days
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + 7);
+  const sessionToken = await createSession(user.id, expiresAt);
 
   const response = jsonResponse({ user });
-  setAuthCookies(response, accessToken, refreshToken);
+  setAccessCookie(response, sessionToken);
   return response;
 }

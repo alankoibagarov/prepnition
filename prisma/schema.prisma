@@ -7,4 +7,30 @@ datasource db {
   provider = "sqlite"
 }
 
-// Models will be added here (e.g. User when auth is migrated)
+model User {
+  id            String       @id @default(cuid())
+  email         String       @unique
+  firstName     String
+  lastName      String
+  passwordHash  String
+  role          String       @default("user") // "user" or "admin"
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  deletedAt     DateTime?    // Soft delete support
+  sessions      Session[]
+
+  @@index([email])
+  @@index([deletedAt])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionToken String   @unique
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+  @@index([sessionToken])
+}
