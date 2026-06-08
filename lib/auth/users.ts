@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
-import type { AuthUser, Role } from "@/types/auth";
 import { prisma } from "@/lib/prisma";
+import type { AuthUser, Role } from "@/types/auth";
 
 export type StoredUser = AuthUser & {
   passwordHash: string;
@@ -164,7 +164,9 @@ export async function createSession(
 /**
  * Delete a session by token
  */
-export async function deleteSessionByToken(sessionToken: string): Promise<void> {
+export async function deleteSessionByToken(
+  sessionToken: string,
+): Promise<void> {
   await prisma.session.deleteMany({
     where: { sessionToken },
   });

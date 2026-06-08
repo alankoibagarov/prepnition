@@ -1,6 +1,6 @@
-import { PrismaClient } from "../generated/prisma/client";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import bcrypt from "bcryptjs";
+import { PrismaClient } from "../generated/prisma/client";
 
 const DEMO_PASSWORD = "password";
 
