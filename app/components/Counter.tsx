@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAppStore } from "@/app/store/useAppStore";
+import { Button } from "@/components/ui/button";
 
 export function Counter() {
   const { count, increment } = useAppStore();
@@ -15,11 +16,11 @@ export function Counter() {
     }
     load();
   }, []);
+
   return (
-    <button type="button" onClick={increment}>
-      Click me! Count:
-      {count}
+    <Button type="button" variant="secondary" onClick={increment}>
+      Click me! Count: {count}
       {message ? ` API says: ${message}` : " API request failed"}
-    </button>
+    </Button>
   );
 }

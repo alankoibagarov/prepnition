@@ -11,7 +11,9 @@ A smart analytics application, intended to improve interview performance
 | Framework | [Next.js 16](https://nextjs.org) (App Router) |
 | Language | [TypeScript 5](https://www.typescriptlang.org) |
 | UI | [React 19](https://react.dev) |
+| Component library | [Shadcn UI](https://ui.shadcn.com) (base-nova preset, Base UI primitives) |
 | Styling | [Tailwind CSS 4](https://tailwindcss.com) |
+| Theming | [next-themes](https://github.com/pacocoursey/next-themes) (class-based dark mode) |
 | Fonts | [Geist](https://vercel.com/font) via `next/font` |
 
 ### State & Data
@@ -79,7 +81,8 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ## Project Structure
 
 ```
-app/              # App Router pages, API routes, and components
+app/              # App Router pages, API routes, and app-specific components
+components/ui/    # Shadcn UI primitives (add via `npx shadcn@latest add <component>`)
 lib/auth/         # Authentication utilities (JWT, cookies, sessions, permissions)
 types/            # Shared TypeScript types
 proxy.ts          # Middleware for protected routes and API endpoints

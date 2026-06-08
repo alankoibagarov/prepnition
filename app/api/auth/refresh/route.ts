@@ -1,8 +1,5 @@
 import { cookies } from "next/headers";
-import {
-  jsonResponse,
-  unauthorizedResponse,
-} from "@/lib/auth/api";
+import { jsonResponse, unauthorizedResponse } from "@/lib/auth/api";
 import { REFRESH_TOKEN_COOKIE } from "@/lib/auth/constants";
 import { setAccessCookie } from "@/lib/auth/cookies";
 import { signAccessToken, verifyRefreshToken } from "@/lib/auth/jwt";
