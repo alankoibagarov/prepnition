@@ -5,7 +5,7 @@ import { PrismaClient } from "../generated/prisma/client";
 const DEMO_PASSWORD = "password";
 
 const adapter = new PrismaBetterSqlite3({
-  url: process.env.DATABASE_URL ?? "file:./dev.db",
+  url: process.env.DATABASE_URL ?? "file:./prisma/dev.db",
 });
 const prisma = new PrismaClient({ adapter });
 
