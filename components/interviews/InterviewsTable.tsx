@@ -1,0 +1,118 @@
+"use client";
+import { useCallback, useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { Interview } from "@/types/interview";
+import InterviewModal from "./InterviewModal";
+
+export default function InterviewsTable() {
+  const [interviews, setInterviews] = useState<Interview[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [selected, setSelected] = useState<Interview | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/interviews");
+      if (!res.ok) throw new Error("Failed to load");
+      const data = await res.json();
+      setInterviews(data.interviews ?? []);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  async function openById(id: string) {
+    try {
+      const res = await fetch(`/api/interviews/${id}`);
+      if (!res.ok) throw new Error("Not found");
+      const data = await res.json();
+      setSelected(data.interview ?? null);
+      setModalOpen(true);
+    } catch (e) {
+      console.error(e);
+      // fallback: close modal if error
+      setSelected(null);
+      setModalOpen(false);
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Interviews</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="mb-4 flex justify-end">
+          <Button onClick={() => load()} disabled={loading} variant="outline">
+            Refresh
+          </Button>
+        </div>
+
+        <div className="overflow-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-muted-foreground">
+                <th className="pb-2">Title</th>
+                <th className="pb-2">Company</th>
+                <th className="pb-2">Position</th>
+                <th className="pb-2">Scheduled</th>
+                <th className="pb-2">Status</th>
+                <th className="pb-2">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {interviews.map((i) => (
+                <tr key={i.id} className="border-t">
+                  <td className="py-2">{i.title}</td>
+                  <td className="py-2">{i.company ?? "—"}</td>
+                  <td className="py-2">{i.position ?? "—"}</td>
+                  <td className="py-2">
+                    {i.scheduledAt
+                      ? new Date(i.scheduledAt).toLocaleString()
+                      : "—"}
+                  </td>
+                  <td className="py-2">{i.status}</td>
+                  <td className="py-2">
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => openById(i.id)}
+                        variant="outline"
+                      >
+                        View
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {interviews.length === 0 && !loading && (
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="py-4 text-center text-sm text-muted-foreground"
+                  >
+                    No interviews
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </CardContent>
+
+      <InterviewModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        interview={selected}
+      />
+    </Card>
+  );
+}

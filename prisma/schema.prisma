@@ -18,6 +18,7 @@ model User {
   updatedAt     DateTime     @updatedAt
   deletedAt     DateTime?    // Soft delete support
   sessions      Session[]
+  interviews    Interview[]
 
   @@index([email])
   @@index([deletedAt])
@@ -33,4 +34,34 @@ model Session {
 
   @@index([userId])
   @@index([sessionToken])
+}
+
+// Interview model: tracks interviews owned by a single user
+enum InterviewStatus {
+  PLANNED
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+model Interview {
+  id          String          @id @default(cuid())
+  userId      String
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title       String
+  company     String?
+  position    String?
+  scheduledAt DateTime?
+  status      InterviewStatus @default(PLANNED)
+  notes       String?
+  score       Int?
+
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  deletedAt   DateTime?
+
+  @@index([userId])
+  @@index([scheduledAt])
+  @@index([deletedAt])
 }
