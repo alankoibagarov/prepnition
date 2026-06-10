@@ -9,15 +9,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { hasRole, requireRole } from "@/lib/auth/permissions";
+import { hasRole } from "@/lib/auth/permissions";
 import { requireAuth } from "@/lib/auth/session";
 import { cn } from "@/lib/utils";
 
 export default async function Dashboard() {
   const session = await requireAuth();
   const isAdmin = hasRole(session, "admin");
-
-  await requireRole("admin");
 
   return (
     <div className="flex min-h-full flex-1 flex-col gap-6 bg-background px-6 py-10">
