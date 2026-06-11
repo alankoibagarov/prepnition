@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LogoutButton } from "@/app/components/LogoutButton";
+import InterviewsTable from "@/components/interviews/InterviewsTable";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import {
@@ -68,6 +69,10 @@ export default async function Dashboard() {
         >
           Back to home
         </Link>
+      </div>
+
+      <div className="container mx-auto p-6">
+        <InterviewsTable />
       </div>
     </div>
   );

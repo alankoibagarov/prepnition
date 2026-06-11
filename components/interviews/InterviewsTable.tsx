@@ -60,6 +60,7 @@ export default function InterviewsTable() {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-muted-foreground">
+                <th className="pb-2">#</th>
                 <th className="pb-2">Title</th>
                 <th className="pb-2">Company</th>
                 <th className="pb-2">Position</th>
@@ -69,8 +70,9 @@ export default function InterviewsTable() {
               </tr>
             </thead>
             <tbody>
-              {interviews.map((i) => (
+              {interviews.map((i, index) => (
                 <tr key={i.id} className="border-t">
+                  <td className="py-2">{index + 1}</td>
                   <td className="py-2">{i.title}</td>
                   <td className="py-2">{i.company ?? "—"}</td>
                   <td className="py-2">{i.position ?? "—"}</td>
