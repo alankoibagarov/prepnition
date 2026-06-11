@@ -8,7 +8,6 @@ export function hasRole(user: AuthUser, role: Role): boolean {
 
 export async function requireRole(role: Role): Promise<AuthUser> {
   const session = await requireAuth();
-  console.log("Checking role for user:", session.email, "Required role:", role);
   if (!hasRole(session, role)) {
     redirect("/unauthorized");
   }
