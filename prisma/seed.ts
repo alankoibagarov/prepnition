@@ -41,10 +41,12 @@ async function seed() {
     console.log(`✓ Created user: ${user.email}`);
   }
 
-  // Create demo interviews for the first demo user
+  // Create demo interviews for the demo users (keep the original 10 for the first demo user, then add extras)
   const demoUser = createdUsers[0];
+  const adminUser = createdUsers[1];
+
   if (demoUser) {
-    // Create 10 mock interviews with varied data
+    // Original 10 mock interviews for demo user (kept for backward compatibility)
     const now = Date.now();
     const interviews = [
       {
@@ -151,6 +153,124 @@ async function seed() {
 
     await prisma.interview.createMany({ data: interviews });
     console.log(`✓ Created demo interviews for ${demoUser.email}`);
+
+    // Helper to generate N mock interviews for a given user
+    const generateMockInterviewsForUser = (userId: string, count: number) => {
+      const companies = [
+        "Orion Tech",
+        "Nebula Systems",
+        "Vertex Labs",
+        "Apex Solutions",
+        "Summit Soft",
+        "Pioneer AI",
+        "Horizon Works",
+        "Cobalt Corp",
+        "Atlas Services",
+        "Nimbus Inc",
+      ];
+      const positions = [
+        "Frontend Engineer",
+        "Backend Engineer",
+        "Fullstack Engineer",
+        "Data Engineer",
+        "Mobile Engineer",
+        "DevOps Engineer",
+        "Security Engineer",
+        "Product Engineer",
+        "SRE",
+        "Engineering Manager",
+      ];
+      const statuses: Array<any> = ["PLANNED", "SCHEDULED", "COMPLETED", "CANCELLED"];
+      const out: any[] = [];
+      for (let i = 0; i < count; i++) {
+        const company = companies[i % companies.length];
+        const position = positions[i % positions.length];
+        const title = `${position} Interview (${company})`;
+        // spread dates across +/- 45 days
+        const offsetDays = i - Math.floor(count / 2);
+        const scheduledAt = new Date(now + offsetDays * 2 * 24 * 60 * 60 * 1000).toISOString();
+        const status = statuses[i % statuses.length];
+        const score = status === "COMPLETED" ? 6 + (i % 4) : null;
+        out.push({
+          userId,
+          title,
+          company,
+          position,
+          scheduledAt,
+          status,
+          notes: `Auto-generated seed interview #${i + 1}`,
+          score,
+        });
+      }
+      return out;
+    };
+
+    // Create 30 extra interviews for the demo user
+    const extraForDemo = generateMockInterviewsForUser(demoUser.id, 30);
+    if (extraForDemo.length) {
+      await prisma.interview.createMany({ data: extraForDemo });
+      console.log(`✓ Created ${extraForDemo.length} extra demo interviews for ${demoUser.email}`);
+    }
+  }
+
+  // Create 30 demo interviews for admin user as well
+  if (adminUser) {
+    const now = Date.now();
+    const generateMockInterviewsForUser = (userId: string, count: number) => {
+      const companies = [
+        "Orion Tech",
+        "Nebula Systems",
+        "Vertex Labs",
+        "Apex Solutions",
+        "Summit Soft",
+        "Pioneer AI",
+        "Horizon Works",
+        "Cobalt Corp",
+        "Atlas Services",
+        "Nimbus Inc",
+      ];
+      const positions = [
+        "Frontend Engineer",
+        "Backend Engineer",
+        "Fullstack Engineer",
+        "Data Engineer",
+        "Mobile Engineer",
+        "DevOps Engineer",
+        "Security Engineer",
+        "Product Engineer",
+        "SRE",
+        "Engineering Manager",
+      ];
+      const statuses: Array<any> = ["PLANNED", "SCHEDULED", "COMPLETED", "CANCELLED"];
+      const out: any[] = [];
+      for (let i = 0; i < count; i++) {
+        const company = companies[i % companies.length];
+        const position = positions[i % positions.length];
+        const title = `${position} Interview (${company})`;
+        // spread dates across +/- 45 days
+        const offsetDays = i - Math.floor(count / 2);
+        const scheduledAt = new Date(now + offsetDays * 2 * 24 * 60 * 60 * 1000).toISOString();
+        const status = statuses[i % statuses.length];
+        const score = status === "COMPLETED" ? 6 + (i % 4) : null;
+        out.push({
+          userId,
+          title,
+          company,
+          position,
+          scheduledAt,
+          status,
+          notes: `Auto-generated admin seed interview #${i + 1}`,
+          score,
+        });
+      }
+      return out;
+    };
+
+    const extraForAdmin = generateMockInterviewsForUser(adminUser.id, 30);
+    if (extraForAdmin.length) {
+      await prisma.interview.createMany({ data: extraForAdmin });
+      console.log(`✓ Created ${extraForAdmin.length} demo interviews for ${adminUser.email}`);
+    }
   }
 
   console.log("✓ Database seeded successfully");
