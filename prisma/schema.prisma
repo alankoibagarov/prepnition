@@ -51,6 +51,7 @@ model Interview {
 
   title       String
   company     String?
+  companyUrl  String?
   position    String?
   scheduledAt DateTime?
   status      InterviewStatus @default(PLANNED)

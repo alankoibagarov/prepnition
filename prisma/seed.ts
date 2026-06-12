@@ -53,6 +53,7 @@ async function seed() {
         userId: demoUser.id,
         title: "Frontend Engineer Interview",
         company: "Acme Corp",
+        companyUrl: "https://www.acme.com",
         position: "Frontend Engineer",
         scheduledAt: new Date(now - 14 * 24 * 60 * 60 * 1000).toISOString(),
         status: "COMPLETED",
@@ -63,6 +64,7 @@ async function seed() {
         userId: demoUser.id,
         title: "Backend Coding Challenge",
         company: "Beta Inc",
+        companyUrl: "https://www.beta.com",
         position: "Backend Engineer",
         scheduledAt: new Date(now + 7 * 24 * 60 * 60 * 1000).toISOString(),
         status: "PLANNED",
@@ -180,7 +182,12 @@ async function seed() {
         "SRE",
         "Engineering Manager",
       ];
-      const statuses: Array<any> = ["PLANNED", "SCHEDULED", "COMPLETED", "CANCELLED"];
+      const statuses: Array<any> = [
+        "PLANNED",
+        "SCHEDULED",
+        "COMPLETED",
+        "CANCELLED",
+      ];
       const out: any[] = [];
       for (let i = 0; i < count; i++) {
         const company = companies[i % companies.length];
@@ -188,7 +195,9 @@ async function seed() {
         const title = `${position} Interview (${company})`;
         // spread dates across +/- 45 days
         const offsetDays = i - Math.floor(count / 2);
-        const scheduledAt = new Date(now + offsetDays * 2 * 24 * 60 * 60 * 1000).toISOString();
+        const scheduledAt = new Date(
+          now + offsetDays * 2 * 24 * 60 * 60 * 1000,
+        ).toISOString();
         const status = statuses[i % statuses.length];
         const score = status === "COMPLETED" ? 6 + (i % 4) : null;
         out.push({
@@ -209,7 +218,9 @@ async function seed() {
     const extraForDemo = generateMockInterviewsForUser(demoUser.id, 30);
     if (extraForDemo.length) {
       await prisma.interview.createMany({ data: extraForDemo });
-      console.log(`✓ Created ${extraForDemo.length} extra demo interviews for ${demoUser.email}`);
+      console.log(
+        `✓ Created ${extraForDemo.length} extra demo interviews for ${demoUser.email}`,
+      );
     }
   }
 
@@ -241,7 +252,12 @@ async function seed() {
         "SRE",
         "Engineering Manager",
       ];
-      const statuses: Array<any> = ["PLANNED", "SCHEDULED", "COMPLETED", "CANCELLED"];
+      const statuses: Array<any> = [
+        "PLANNED",
+        "SCHEDULED",
+        "COMPLETED",
+        "CANCELLED",
+      ];
       const out: any[] = [];
       for (let i = 0; i < count; i++) {
         const company = companies[i % companies.length];
@@ -249,7 +265,9 @@ async function seed() {
         const title = `${position} Interview (${company})`;
         // spread dates across +/- 45 days
         const offsetDays = i - Math.floor(count / 2);
-        const scheduledAt = new Date(now + offsetDays * 2 * 24 * 60 * 60 * 1000).toISOString();
+        const scheduledAt = new Date(
+          now + offsetDays * 2 * 24 * 60 * 60 * 1000,
+        ).toISOString();
         const status = statuses[i % statuses.length];
         const score = status === "COMPLETED" ? 6 + (i % 4) : null;
         out.push({
@@ -269,7 +287,9 @@ async function seed() {
     const extraForAdmin = generateMockInterviewsForUser(adminUser.id, 30);
     if (extraForAdmin.length) {
       await prisma.interview.createMany({ data: extraForAdmin });
-      console.log(`✓ Created ${extraForAdmin.length} demo interviews for ${adminUser.email}`);
+      console.log(
+        `✓ Created ${extraForAdmin.length} demo interviews for ${adminUser.email}`,
+      );
     }
   }
 
