@@ -1,8 +1,10 @@
 "use client";
+import { Edit, Trash } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Interview } from "@/types/interview";
+import DeleteInterviewModal from "./DeleteInterviewModal";
 import InterviewModal from "./InterviewModal";
 
 export default function InterviewsTable() {
@@ -10,6 +12,10 @@ export default function InterviewsTable() {
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<Interview | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedForDelete, setSelectedForDelete] = useState<string | null>(
+    null,
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -29,7 +35,7 @@ export default function InterviewsTable() {
     load();
   }, [load]);
 
-  async function openById(id: string) {
+  async function openInterview(id: string) {
     try {
       const res = await fetch(`/api/interviews/${id}`);
       if (!res.ok) throw new Error("Not found");
@@ -41,6 +47,26 @@ export default function InterviewsTable() {
       // fallback: close modal if error
       setSelected(null);
       setModalOpen(false);
+    }
+  }
+
+  async function openDeleteModal(id: string) {
+    setSelectedForDelete(id);
+    setDeleteModalOpen(true);
+  }
+
+  async function deleteInterview(id: string) {
+    try {
+      const res = await fetch(`/api/interviews/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Not found");
+      setSelected(null);
+      setDeleteModalOpen(false);
+      load();
+    } catch (e) {
+      console.error(e);
+      // fallback: close modal if error
+      setSelected(null);
+      setDeleteModalOpen(false);
     }
   }
 
@@ -86,10 +112,19 @@ export default function InterviewsTable() {
                     <div className="flex gap-2">
                       <Button
                         size="sm"
-                        onClick={() => openById(i.id)}
+                        onClick={() => openInterview(i.id)}
                         variant="outline"
+                        title="Edit"
                       >
-                        View
+                        <Edit />
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => openDeleteModal(i.id)}
+                        variant="outline"
+                        title="Delete"
+                      >
+                        <Trash />
                       </Button>
                     </div>
                   </td>
@@ -114,6 +149,13 @@ export default function InterviewsTable() {
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         interview={selected}
+      />
+
+      <DeleteInterviewModal
+        open={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        interviewId={selectedForDelete}
+        onDelete={deleteInterview}
       />
     </Card>
   );
