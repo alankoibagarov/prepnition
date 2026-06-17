@@ -1,4 +1,9 @@
-import { jsonResponse, badRequestResponse, unauthorizedResponse } from "@/lib/auth/api";
+import {
+  badRequestResponse,
+  jsonResponse,
+  unauthorizedResponse,
+} from "@/lib/auth/api";
+import { RESPONSE_CODES } from "@/lib/auth/enums";
 import { getSession } from "@/lib/auth/session";
 import { createInterview, getInterviewsForUser } from "@/lib/interviews";
 
@@ -31,8 +36,7 @@ export async function POST(request: Request) {
     scheduledAt: body.scheduledAt ?? null,
     status: body.status ?? undefined,
     notes: body.notes,
-    score: body.score ?? null,
   });
 
-  return jsonResponse({ interview: created }, 201);
+  return jsonResponse({ interview: created }, RESPONSE_CODES.CREATED);
 }
