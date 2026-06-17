@@ -1,4 +1,14 @@
-export type InterviewStatus = "PLANNED" | "SCHEDULED" | "COMPLETED" | "CANCELLED";
+export enum InterviewStatus {
+  CREATED = "CREATED",
+  APPLICATION = "APPLICATION",
+  SCREENING = "SCREENING",
+  TECHNICAL = "TECHNICAL",
+  MANAGERIAL = "MANAGERIAL",
+  REJECTED = "REJECTED",
+  GHOSTED = "GHOSTED",
+  WITHDRAWN = "WITHDRAWN",
+  OFFER = "OFFER",
+}
 
 export type Interview = {
   id: string;
@@ -9,7 +19,6 @@ export type Interview = {
   scheduledAt?: string | null;
   status: InterviewStatus;
   notes?: string | null;
-  score?: number | null;
   createdAt: string;
   updatedAt: string;
   deletedAt?: string | null;

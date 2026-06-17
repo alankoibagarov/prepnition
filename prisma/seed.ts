@@ -1,6 +1,6 @@
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import bcrypt from "bcryptjs";
-import { PrismaClient } from "../generated/prisma/client";
+import { InterviewStatus, PrismaClient } from "../generated/prisma/client";
 
 const DEMO_PASSWORD = "password";
 
@@ -56,9 +56,8 @@ async function seed() {
         companyUrl: "https://www.acme.com",
         position: "Frontend Engineer",
         scheduledAt: new Date(now - 14 * 24 * 60 * 60 * 1000).toISOString(),
-        status: "COMPLETED",
+        status: InterviewStatus.CREATED,
         notes: "Onsite, focused on React and accessibility.",
-        score: 8,
       },
       {
         userId: demoUser.id,
@@ -67,9 +66,8 @@ async function seed() {
         companyUrl: "https://www.beta.com",
         position: "Backend Engineer",
         scheduledAt: new Date(now + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        status: "PLANNED",
+        status: InterviewStatus.CREATED,
         notes: "Take-home challenge",
-        score: null,
       },
       {
         userId: demoUser.id,
@@ -77,9 +75,8 @@ async function seed() {
         company: "Gamma Labs",
         position: "Product Engineer",
         scheduledAt: new Date(now + 2 * 24 * 60 * 60 * 1000).toISOString(),
-        status: "SCHEDULED",
+        status: InterviewStatus.CREATED,
         notes: "30m phone screen.",
-        score: null,
       },
       {
         userId: demoUser.id,
@@ -87,9 +84,8 @@ async function seed() {
         company: "Delta Data",
         position: "Data Engineer",
         scheduledAt: new Date(now + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        status: "PLANNED",
+        status: InterviewStatus.CREATED,
         notes: "SQL & ETL topics.",
-        score: null,
       },
       {
         userId: demoUser.id,
@@ -97,9 +93,8 @@ async function seed() {
         company: "Epsilon Mobile",
         position: "Mobile Engineer",
         scheduledAt: new Date(now - 3 * 24 * 60 * 60 * 1000).toISOString(),
-        status: "COMPLETED",
+        status: InterviewStatus.CREATED,
         notes: "Pairing exercise on iOS.",
-        score: 7,
       },
       {
         userId: demoUser.id,
@@ -107,9 +102,8 @@ async function seed() {
         company: "Zeta Ops",
         position: "DevOps Engineer",
         scheduledAt: new Date(now + 3 * 24 * 60 * 60 * 1000).toISOString(),
-        status: "SCHEDULED",
+        status: InterviewStatus.CREATED,
         notes: "Kubernetes and infra.",
-        score: null,
       },
       {
         userId: demoUser.id,
@@ -117,9 +111,8 @@ async function seed() {
         company: "Theta Works",
         position: "Fullstack Engineer",
         scheduledAt: new Date(now + 5 * 24 * 60 * 60 * 1000).toISOString(),
-        status: "PLANNED",
+        status: InterviewStatus.CREATED,
         notes: "48h take-home project.",
-        score: null,
       },
       {
         userId: demoUser.id,
@@ -127,9 +120,8 @@ async function seed() {
         company: "Iota Secure",
         position: "Security Engineer",
         scheduledAt: new Date(now + 10 * 24 * 60 * 60 * 1000).toISOString(),
-        status: "PLANNED",
+        status: InterviewStatus.CREATED,
         notes: "Threat modeling discussion.",
-        score: null,
       },
       {
         userId: demoUser.id,
@@ -137,9 +129,8 @@ async function seed() {
         company: "Kappa Reliability",
         position: "SRE",
         scheduledAt: new Date(now - 1 * 24 * 60 * 60 * 1000).toISOString(),
-        status: "COMPLETED",
+        status: InterviewStatus.CREATED,
         notes: "Culture fit and incident response.",
-        score: 6,
       },
       {
         userId: demoUser.id,
@@ -147,9 +138,8 @@ async function seed() {
         company: "Lambda Lead",
         position: "Engineering Manager",
         scheduledAt: new Date(now + 14 * 24 * 60 * 60 * 1000).toISOString(),
-        status: "SCHEDULED",
+        status: InterviewStatus.CREATED,
         notes: "Leadership and org design.",
-        score: null,
       },
     ];
 
@@ -182,11 +172,11 @@ async function seed() {
         "SRE",
         "Engineering Manager",
       ];
-      const statuses: Array<any> = [
-        "PLANNED",
-        "SCHEDULED",
-        "COMPLETED",
-        "CANCELLED",
+      const statuses: Array<InterviewStatus> = [
+        InterviewStatus.CREATED,
+        InterviewStatus.APPLICATION,
+        InterviewStatus.SCREENING,
+        InterviewStatus.TECHNICAL,
       ];
       const out: any[] = [];
       for (let i = 0; i < count; i++) {
@@ -199,7 +189,6 @@ async function seed() {
           now + offsetDays * 2 * 24 * 60 * 60 * 1000,
         ).toISOString();
         const status = statuses[i % statuses.length];
-        const score = status === "COMPLETED" ? 6 + (i % 4) : null;
         out.push({
           userId,
           title,
@@ -208,7 +197,6 @@ async function seed() {
           scheduledAt,
           status,
           notes: `Auto-generated seed interview #${i + 1}`,
-          score,
         });
       }
       return out;
@@ -252,11 +240,11 @@ async function seed() {
         "SRE",
         "Engineering Manager",
       ];
-      const statuses: Array<any> = [
-        "PLANNED",
-        "SCHEDULED",
-        "COMPLETED",
-        "CANCELLED",
+      const statuses: Array<InterviewStatus> = [
+        InterviewStatus.CREATED,
+        InterviewStatus.APPLICATION,
+        InterviewStatus.SCREENING,
+        InterviewStatus.TECHNICAL,
       ];
       const out: any[] = [];
       for (let i = 0; i < count; i++) {
@@ -269,7 +257,6 @@ async function seed() {
           now + offsetDays * 2 * 24 * 60 * 60 * 1000,
         ).toISOString();
         const status = statuses[i % statuses.length];
-        const score = status === "COMPLETED" ? 6 + (i % 4) : null;
         out.push({
           userId,
           title,
@@ -278,7 +265,6 @@ async function seed() {
           scheduledAt,
           status,
           notes: `Auto-generated admin seed interview #${i + 1}`,
-          score,
         });
       }
       return out;

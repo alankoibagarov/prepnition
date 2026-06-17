@@ -6,9 +6,8 @@ export type CreateInterviewInput = {
   company?: string;
   position?: string;
   scheduledAt?: Date | string | null;
-  status?: InterviewStatus;
+  status: InterviewStatus;
   notes?: string;
-  score?: number | null;
 };
 
 export type UpdateInterviewInput = Partial<CreateInterviewInput>;
@@ -24,9 +23,8 @@ export async function createInterview(
       company: data.company ?? null,
       position: data.position ?? null,
       scheduledAt: data.scheduledAt ? new Date(data.scheduledAt) : null,
-      status: data.status ?? undefined,
+      status: data.status,
       notes: data.notes ?? null,
-      score: data.score ?? null,
     },
   });
 }
@@ -72,7 +70,6 @@ export async function updateInterview(
         : existing.scheduledAt,
       status: (changes.status as any) ?? existing.status,
       notes: changes.notes ?? existing.notes,
-      score: changes.score ?? existing.score,
     },
   });
 }

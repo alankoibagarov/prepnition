@@ -38,10 +38,15 @@ model Session {
 
 // Interview model: tracks interviews owned by a single user
 enum InterviewStatus {
-  PLANNED
-  SCHEDULED
-  COMPLETED
-  CANCELLED
+  CREATED
+  APPLICATION
+  SCREENING
+  TECHNICAL
+  MANAGERIAL
+  REJECTED
+  GHOSTED
+  WITHDRAWN
+  OFFER
 }
 
 model Interview {
@@ -54,9 +59,8 @@ model Interview {
   companyUrl  String?
   position    String?
   scheduledAt DateTime?
-  status      InterviewStatus @default(PLANNED)
+  status      InterviewStatus @default(CREATED)
   notes       String?
-  score       Int?
 
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
