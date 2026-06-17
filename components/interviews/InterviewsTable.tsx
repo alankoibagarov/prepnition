@@ -1,5 +1,5 @@
 "use client";
-import { Edit, Trash } from "lucide-react";
+import { Edit, TableOfContents, Trash, ViewIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -70,6 +70,27 @@ export default function InterviewsTable() {
     }
   }
 
+  async function updateInterview(id: string, updates: Partial<Interview>) {
+    try {
+      const res = await fetch(`/api/interviews/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updates),
+      });
+      if (!res.ok) throw new Error("Not found");
+      const data = await res.json();
+      setSelected(data.interview ?? null);
+      load();
+    } catch (e) {
+      console.error(e);
+      // fallback: close modal if error
+      setSelected(null);
+      setModalOpen(false);
+    }
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -111,14 +132,16 @@ export default function InterviewsTable() {
                   <td className="py-2">
                     <div className="flex gap-2">
                       <Button
+                        className="cursor-pointer"
                         size="sm"
                         onClick={() => openInterview(i.id)}
                         variant="outline"
-                        title="Edit"
+                        title="View Details"
                       >
-                        <Edit />
+                        <TableOfContents />
                       </Button>
                       <Button
+                        className="cursor-pointer"
                         size="sm"
                         onClick={() => openDeleteModal(i.id)}
                         variant="outline"
@@ -148,6 +171,9 @@ export default function InterviewsTable() {
       <InterviewModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
+        onSubmit={(modalForm) => {
+          updateInterview(selected?.id ?? "", { ...selected, ...modalForm });
+        }}
         interview={selected}
       />
 
