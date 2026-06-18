@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import type { Interview } from "@/types/interview";
+import { type Interview, InterviewStatus } from "@/types/interview";
 import { Calendar } from "../ui/calendar";
 import {
   Field,
@@ -16,6 +16,7 @@ import {
 } from "../ui/field";
 import { Input } from "../ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "../ui/select";
 import { Separator } from "../ui/separator";
 import { Textarea } from "../ui/textarea";
 
@@ -38,6 +39,7 @@ export default function InterviewModal({
     position: interview?.position ?? "",
     company: interview?.company ?? "",
     notes: interview?.notes ?? "",
+    status: interview?.status ?? InterviewStatus.CREATED,
   });
 
   const hasAnyChanges = Object.keys(modalForm).some(
@@ -46,12 +48,37 @@ export default function InterviewModal({
       interview?.[key as keyof Interview],
   );
 
+  const formatDate = (dateStr: string | null | undefined) => {
+    if (!dateStr) return "N/A";
+    const date = new Date(dateStr);
+    return format(date, "PPPpp");
+  };
+
+  const capitalize = (str: string) =>
+    str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+
+  const interviewStatuses = Object.values(InterviewStatus).map((status) => ({
+    value: status,
+    label: capitalize(status),
+  }));
+
+  function onReset() {
+    setModalForm({
+      title: interview?.title ?? "",
+      position: interview?.position ?? "",
+      company: interview?.company ?? "",
+      notes: interview?.notes ?? "",
+      status: interview?.status ?? InterviewStatus.CREATED,
+    });
+  }
+
   useEffect(() => {
     setModalForm({
       title: interview?.title ?? "",
       position: interview?.position ?? "",
       company: interview?.company ?? "",
       notes: interview?.notes ?? "",
+      status: interview?.status ?? InterviewStatus.CREATED,
     });
   }, [interview]);
 
@@ -64,7 +91,7 @@ export default function InterviewModal({
         onClick={onClose}
         aria-label="Close modal"
       />
-      <Card className={cn("z-50 max-w-6xl w-full mx-4")}>
+      <Card className={cn("z-50 max-w-7xl w-full mx-4")}>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-8">
             <div className="space-y-2 flex-2">
@@ -108,6 +135,33 @@ export default function InterviewModal({
                       />
                     </Field>
                     <Field>
+                      <FieldLabel>Status:</FieldLabel>
+                      <Select
+                        value={modalForm.status}
+                        onValueChange={(value) => {
+                          setModalForm({
+                            ...modalForm,
+                            status: value as InterviewStatus,
+                          });
+                        }}
+                      >
+                        <SelectTrigger>
+                          <div className="flex items-center">
+                            {interviewStatuses.find(
+                              (s) => s.value === modalForm.status,
+                            )?.label ?? "Select status"}
+                          </div>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {interviewStatuses.map((status) => (
+                            <SelectItem key={status.value} value={status.value}>
+                              {status.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                    <Field>
                       <FieldLabel>Notes:</FieldLabel>
                       <Textarea
                         value={modalForm.notes}
@@ -146,7 +200,7 @@ export default function InterviewModal({
                   </FieldSet>
                   <FieldSeparator />
                   <FieldSet className="flex flex-col gap-4 md:flex-row">
-                    <FieldGroup className="max-w-xs flex-row">
+                    <FieldGroup className="flex-row">
                       <Field>
                         <FieldLabel htmlFor="date-picker-optional">
                           Next Interview Date
@@ -226,7 +280,7 @@ export default function InterviewModal({
                       <Field>
                         <FieldLabel>Created:</FieldLabel>
                         <p className="text-sm text-muted-foreground">
-                          {interview?.createdAt ?? ""}
+                          {formatDate(interview?.createdAt)}
                         </p>
                       </Field>
                       <Field>
@@ -234,7 +288,7 @@ export default function InterviewModal({
                           Last Updated:
                         </FieldLabel>
                         <p className="text-sm text-muted-foreground">
-                          {interview?.updatedAt ?? ""}
+                          {formatDate(interview?.updatedAt)}
                         </p>
                       </Field>
                     </FieldGroup>
@@ -252,11 +306,16 @@ export default function InterviewModal({
             </div>
           </div>
           <Separator className="my-4" />
-          <div className="flex justify-end gap-2 p-4">
+          <div className="flex justify-between gap-2 p-4">
             {hasAnyChanges && (
-              <Button variant="default" onClick={() => onSubmit(modalForm)}>
-                Submit Changes
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="default" onClick={() => onSubmit(modalForm)}>
+                  Submit Changes
+                </Button>
+                <Button variant="outline" onClick={() => onReset()}>
+                  Reset Changes
+                </Button>
+              </div>
             )}
 
             <Button variant="ghost" onClick={onClose}>
