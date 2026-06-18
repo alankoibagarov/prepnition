@@ -10,6 +10,15 @@ export enum InterviewStatus {
   OFFER = "OFFER",
 }
 
+export type InterviewHistory = {
+  id: string;
+  interviewId: string;
+  userId: string;
+  action: "CREATE" | "UPDATE" | "DELETE";
+  changes: Record<string, { before: any; after: any }>;
+  createdAt: string;
+};
+
 export type Interview = {
   id: string;
   userId: string;
@@ -22,4 +31,5 @@ export type Interview = {
   createdAt: string;
   updatedAt: string;
   deletedAt?: string | null;
+  history?: InterviewHistory[];
 };

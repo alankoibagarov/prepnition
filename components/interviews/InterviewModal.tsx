@@ -82,6 +82,15 @@ export default function InterviewModal({
     });
   }, [interview]);
 
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = "unset";
+      };
+    }
+  }, [open]);
+
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -297,16 +306,44 @@ export default function InterviewModal({
               </form>
             </div>
             <Separator orientation="vertical" className="hidden md:block" />
-            <div className="space-y-2 flex-1">
-              <strong>History:</strong>
-              <div>
-                Updates:
-                <div>123</div>
+            <div className="space-y-2 flex-1 flex flex-col">
+              <strong className="">History:</strong>
+              <div className="max-h-165 overflow-auto">
+                {interview?.history && interview.history.length > 0 ? (
+                  interview.history.map((h) => (
+                    <div key={h.id} className="mb-2 p-2 border rounded">
+                      <div className="flex justify-between text-sm">
+                        <div className="font-medium">{h.action}</div>
+                        <div className="text-muted-foreground">
+                          {formatDate(h.createdAt)}
+                        </div>
+                      </div>
+                      <div className="mt-1 text-xs">
+                        {Object.entries(h.changes).map(([field, val]) => (
+                          <div key={field}>
+                            <strong>{capitalize(field)}:</strong>{" "}
+                            {String((val as any).before ?? "—")} →{" "}
+                            {String((val as any).after ?? "—")}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-sm text-muted-foreground">
+                    No history
+                  </div>
+                )}
               </div>
             </div>
           </div>
           <Separator className="my-4" />
-          <div className="flex justify-between gap-2 p-4">
+          <div
+            className={
+              "flex gap-2 p-4 " +
+              (hasAnyChanges ? "justify-between" : " justify-end")
+            }
+          >
             {hasAnyChanges && (
               <div className="flex gap-2">
                 <Button variant="default" onClick={() => onSubmit(modalForm)}>

@@ -40,7 +40,11 @@ export default function InterviewsTable() {
       const res = await fetch(`/api/interviews/${id}`);
       if (!res.ok) throw new Error("Not found");
       const data = await res.json();
-      setSelected(data.interview ?? null);
+      setSelected(
+        data.interview
+          ? { ...data.interview, history: data.history ?? [] }
+          : null,
+      );
       setModalOpen(true);
     } catch (e) {
       console.error(e);
@@ -81,7 +85,12 @@ export default function InterviewsTable() {
       });
       if (!res.ok) throw new Error("Not found");
       const data = await res.json();
-      setSelected(data.interview ?? null);
+      console.log(data);
+      setSelected(
+        data.interview
+          ? { ...data.interview, history: data.history ?? [] }
+          : null,
+      );
       load();
     } catch (e) {
       console.error(e);
@@ -172,7 +181,7 @@ export default function InterviewsTable() {
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         onSubmit={(modalForm) => {
-          updateInterview(selected?.id ?? "", { ...selected, ...modalForm });
+          updateInterview(selected?.id ?? "", modalForm);
         }}
         interview={selected}
       />

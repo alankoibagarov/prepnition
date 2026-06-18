@@ -7,14 +7,12 @@ import { RESPONSE_CODES } from "@/lib/auth/enums";
 import { getSession } from "@/lib/auth/session";
 import {
   getInterviewById,
+  getInterviewHistory,
   softDeleteInterview,
   updateInterview,
 } from "@/lib/interviews";
 
-export async function GET(
-  request: Request,
-  { params }: { params: { id: string } },
-) {
+export async function GET(request: any, { params }: any) {
   const session = await getSession();
   if (!session) return unauthorizedResponse();
 
@@ -23,13 +21,11 @@ export async function GET(
   if (!interview)
     return jsonResponse({ error: "Not found" }, RESPONSE_CODES.NOT_FOUND);
 
-  return jsonResponse({ interview });
+  const history = await getInterviewHistory(id, session.id);
+  return jsonResponse({ interview, history });
 }
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: { id: string } },
-) {
+export async function PATCH(request: any, { params }: any) {
   const session = await getSession();
   if (!session) return unauthorizedResponse();
 
@@ -48,13 +44,12 @@ export async function PATCH(
       RESPONSE_CODES.NOT_FOUND,
     );
 
-  return jsonResponse({ interview: updated });
+  const history = await getInterviewHistory(id, session.id);
+
+  return jsonResponse({ interview: updated, history });
 }
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } },
-) {
+export async function DELETE(request: any, { params }: any) {
   const session = await getSession();
   if (!session) return unauthorizedResponse();
 
