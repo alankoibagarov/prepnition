@@ -47,7 +47,7 @@ export default function Sidebar({ session }: { session: AuthUser }) {
                 <Link
                   key={it.href}
                   href={it.href}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-sidebar-ring transition-colors ${
+                  className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-sidebar-ring transition-colors ${
                     active
                       ? "bg-sidebar-primary text-sidebar-primary-foreground"
                       : "text-sidebar-foreground hover:bg-sidebar-accent/40"
@@ -89,7 +89,7 @@ export default function Sidebar({ session }: { session: AuthUser }) {
             <Link
               key={it.href}
               href={it.href}
-              className={`flex flex-col items-center gap-1 px-3 py-1 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-sidebar-ring ${
+              className={`flex flex-col items-center gap-1 px-3 py-1 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-sidebar-ring ${
                 active
                   ? "text-sidebar-primary bg-sidebar-primary/8"
                   : "text-sidebar-foreground/90"

@@ -12,7 +12,13 @@ export async function GET() {
   if (!session) return unauthorizedResponse();
 
   const interviews = await getInterviewsForUser(session.id);
-  return jsonResponse({ interviews });
+  // Map Prisma relation 'histories' -> 'history' for client-side consumers
+  const mapped = interviews.map((iv) => {
+    const { histories, ...rest } = iv as any;
+    return { ...rest, history: histories ?? [] };
+  });
+
+  return jsonResponse({ interviews: mapped });
 }
 
 export async function POST(request: Request) {

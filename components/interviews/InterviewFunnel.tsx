@@ -44,8 +44,55 @@ export default function InterviewFunnel() {
     if (totals[i.status] !== undefined) totals[i.status]++;
   });
 
-  // Compute conversion rates between adjacent stages
+  // Compute conversion rates between adjacent stages (current counts)
   const counts = STAGES.map((s) => totals[s] ?? 0);
+
+  // Compute transition counts using history: for each interview, reconstruct statuses seen over time
+  const transitionCounts: number[] = STAGES.map(() => 0);
+  const everSeenCounts: number[] = STAGES.map(() => 0);
+
+  interviews.forEach((i) => {
+    const history = (i as any).history ?? [];
+    // Ensure chronological order by createdAt ascending
+    const sorted = [...history].sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    const seen: string[] = [];
+    const seenSet = new Set<string>();
+
+    for (const h of sorted) {
+      if (h && h.changes && h.changes.status) {
+        const before = h.changes.status.before as string | undefined;
+        const after = h.changes.status.after as string | undefined;
+        if (before) {
+          seenSet.add(before);
+          if (!seen.length || seen[seen.length - 1] !== before) seen.push(before);
+        }
+        if (after) {
+          seenSet.add(after);
+          if (!seen.length || seen[seen.length - 1] !== after) seen.push(after);
+        }
+      }
+    }
+
+    // include current status if not present
+    seenSet.add(i.status as string);
+    if (!seen.length || seen[seen.length - 1] !== i.status) seen.push(i.status as string);
+
+    // mark ever-seen
+    for (let idx = 0; idx < STAGES.length; idx++) {
+      if (seenSet.has(STAGES[idx] as string)) everSeenCounts[idx] += 1;
+    }
+
+    // For each adjacent stage pair, check if seen contains prev before cur
+    for (let idx = 1; idx < STAGES.length; idx++) {
+      const prev = STAGES[idx - 1];
+      const cur = STAGES[idx];
+      const prevIndex = seen.indexOf(prev as string);
+      const curIndex = seen.indexOf(cur as string);
+      if (prevIndex !== -1 && curIndex !== -1 && prevIndex < curIndex) {
+        transitionCounts[idx] += 1;
+      }
+    }
+  });
 
   return (
     <Card className="">
@@ -88,10 +135,8 @@ export default function InterviewFunnel() {
                   </div>
 
                   <div className="text-center mt-2">
-                    <div className="text-sm font-semibold">{count}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {conversion}% from previous
-                    </div>
+                    <div className="text-sm font-semibold">{count} <span className="text-xs text-muted-foreground">(ever: {everSeenCounts[idx]})</span></div>
+                    <div className="text-xs text-muted-foreground">{conversion}% from previous — {transitionCounts[idx]} transitioned</div>
                   </div>
                 </div>
               );

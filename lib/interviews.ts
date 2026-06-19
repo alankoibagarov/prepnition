@@ -64,6 +64,7 @@ export async function getInterviewsForUser(
     orderBy: { scheduledAt: "desc" },
     take,
     skip,
+    include: { histories: { orderBy: { createdAt: 'asc' } } },
   });
 }
 
