@@ -11,7 +11,6 @@ const prisma = new PrismaClient({ adapter });
 
 async function seed() {
   // Clear existing data
-  await prisma.session.deleteMany();
   await prisma.user.deleteMany();
 
   // Create demo users

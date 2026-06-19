@@ -23,6 +23,8 @@ function getRefreshSecret(): Uint8Array {
 export async function signAccessToken(payload: TokenPayload): Promise<string> {
   return new SignJWT({
     email: payload.email,
+    firstName: payload.firstName,
+    lastName: payload.lastName,
     role: payload.role,
   })
     .setProtectedHeader({ alg: "HS256" })
@@ -56,6 +58,10 @@ export async function verifyAccessToken(
     return {
       sub: payload.sub,
       email: payload.email,
+      firstName:
+        typeof payload.firstName === "string" ? payload.firstName : undefined,
+      lastName:
+        typeof payload.lastName === "string" ? payload.lastName : undefined,
       role: payload.role,
     };
   } catch {

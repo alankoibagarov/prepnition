@@ -3,8 +3,9 @@ import {
   jsonResponse,
   unauthorizedResponse,
 } from "@/lib/auth/api";
-import { clearAuthCookies, setAccessCookie } from "@/lib/auth/cookies";
-import { createSession, validateCredentials } from "@/lib/auth/users";
+import { setAuthCookies } from "@/lib/auth/cookies";
+import { signAccessToken, signRefreshToken } from "@/lib/auth/jwt";
+import { validateCredentials } from "@/lib/auth/users";
 
 type LoginBody = {
   email?: string;
@@ -31,12 +32,16 @@ export async function POST(request: Request) {
     return unauthorizedResponse("Invalid email or password");
   }
 
-  // Create session that expires in 7 days
-  const expiresAt = new Date();
-  expiresAt.setDate(expiresAt.getDate() + 7);
-  const sessionToken = await createSession(user.id, expiresAt);
+  const accessToken = await signAccessToken({
+    sub: user.id,
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    role: user.role,
+  });
+  const refreshToken = await signRefreshToken(user.id);
 
   const response = jsonResponse({ user });
-  setAccessCookie(response, sessionToken);
+  setAuthCookies(response, accessToken, refreshToken);
   return response;
 }

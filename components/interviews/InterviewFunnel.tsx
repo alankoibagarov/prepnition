@@ -54,7 +54,10 @@ export default function InterviewFunnel() {
   interviews.forEach((i) => {
     const history = (i as any).history ?? [];
     // Ensure chronological order by createdAt ascending
-    const sorted = [...history].sort((a: any, b: any) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    const sorted = [...history].sort(
+      (a: any, b: any) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+    );
     const seen: string[] = [];
     const seenSet = new Set<string>();
 
@@ -64,7 +67,8 @@ export default function InterviewFunnel() {
         const after = h.changes.status.after as string | undefined;
         if (before) {
           seenSet.add(before);
-          if (!seen.length || seen[seen.length - 1] !== before) seen.push(before);
+          if (!seen.length || seen[seen.length - 1] !== before)
+            seen.push(before);
         }
         if (after) {
           seenSet.add(after);
@@ -75,7 +79,8 @@ export default function InterviewFunnel() {
 
     // include current status if not present
     seenSet.add(i.status as string);
-    if (!seen.length || seen[seen.length - 1] !== i.status) seen.push(i.status as string);
+    if (!seen.length || seen[seen.length - 1] !== i.status)
+      seen.push(i.status as string);
 
     // mark ever-seen
     for (let idx = 0; idx < STAGES.length; idx++) {
@@ -135,8 +140,16 @@ export default function InterviewFunnel() {
                   </div>
 
                   <div className="text-center mt-2">
-                    <div className="text-sm font-semibold">{count} <span className="text-xs text-muted-foreground">(ever: {everSeenCounts[idx]})</span></div>
-                    <div className="text-xs text-muted-foreground">{conversion}% from previous — {transitionCounts[idx]} transitioned</div>
+                    <div className="text-sm font-semibold">
+                      {count}{" "}
+                      <span className="text-xs text-muted-foreground">
+                        (ever: {everSeenCounts[idx]})
+                      </span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {conversion}% from previous — {transitionCounts[idx]}{" "}
+                      transitioned
+                    </div>
                   </div>
                 </div>
               );

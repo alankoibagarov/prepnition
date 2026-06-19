@@ -64,7 +64,7 @@ export async function getInterviewsForUser(
     orderBy: { scheduledAt: "desc" },
     take,
     skip,
-    include: { histories: { orderBy: { createdAt: 'asc' } } },
+    include: { histories: { orderBy: { createdAt: "asc" } } },
   });
 }
 
@@ -87,26 +87,54 @@ export async function updateInterview(
 
   // Compute diff of only changed fields
   const diff: Record<string, { before: any; after: any }> = {};
-  if (typeof changes.title !== 'undefined' && changes.title !== existing.title) {
+  if (
+    typeof changes.title !== "undefined" &&
+    changes.title !== existing.title
+  ) {
     diff.title = { before: existing.title, after: changes.title ?? null };
   }
-  if (typeof changes.company !== 'undefined' && changes.company !== existing.company) {
+  if (
+    typeof changes.company !== "undefined" &&
+    changes.company !== existing.company
+  ) {
     diff.company = { before: existing.company, after: changes.company ?? null };
   }
-  if (typeof changes.position !== 'undefined' && changes.position !== existing.position) {
-    diff.position = { before: existing.position, after: changes.position ?? null };
+  if (
+    typeof changes.position !== "undefined" &&
+    changes.position !== existing.position
+  ) {
+    diff.position = {
+      before: existing.position,
+      after: changes.position ?? null,
+    };
   }
-  if (typeof changes.scheduledAt !== 'undefined') {
-    const newDate = changes.scheduledAt ? new Date(changes.scheduledAt as any) : null;
+  if (typeof changes.scheduledAt !== "undefined") {
+    const newDate = changes.scheduledAt
+      ? new Date(changes.scheduledAt as any)
+      : null;
     const oldDate = existing.scheduledAt ?? null;
-    if ((oldDate && newDate && oldDate.getTime && newDate.getTime && (new Date(oldDate)).getTime() !== (new Date(newDate)).getTime()) || (oldDate === null && newDate !== null) || (oldDate !== null && newDate === null)) {
+    if (
+      (oldDate &&
+        newDate &&
+        oldDate.getTime &&
+        newDate.getTime &&
+        new Date(oldDate).getTime() !== new Date(newDate).getTime()) ||
+      (oldDate === null && newDate !== null) ||
+      (oldDate !== null && newDate === null)
+    ) {
       diff.scheduledAt = { before: existing.scheduledAt, after: newDate };
     }
   }
-  if (typeof changes.status !== 'undefined' && (changes.status as any) !== existing.status) {
+  if (
+    typeof changes.status !== "undefined" &&
+    (changes.status as any) !== existing.status
+  ) {
     diff.status = { before: existing.status, after: changes.status as any };
   }
-  if (typeof changes.notes !== 'undefined' && changes.notes !== existing.notes) {
+  if (
+    typeof changes.notes !== "undefined" &&
+    changes.notes !== existing.notes
+  ) {
     diff.notes = { before: existing.notes, after: changes.notes ?? null };
   }
 
@@ -166,7 +194,12 @@ export async function softDeleteInterview(id: string, userId: string) {
 
 export async function getInterviewHistory(interviewId: string, userId: string) {
   // Ensure the interview belongs to the user
-  const existing = await prisma.interview.findFirst({ where: { id: interviewId, userId } });
+  const existing = await prisma.interview.findFirst({
+    where: { id: interviewId, userId },
+  });
   if (!existing) return [];
-  return prisma.interviewHistory.findMany({ where: { interviewId }, orderBy: { createdAt: 'desc' } });
+  return prisma.interviewHistory.findMany({
+    where: { interviewId },
+    orderBy: { createdAt: "desc" },
+  });
 }

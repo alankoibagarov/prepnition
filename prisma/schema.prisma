@@ -17,23 +17,10 @@ model User {
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
   deletedAt     DateTime?    // Soft delete support
-  sessions      Session[]
   interviews    Interview[]
 
   @@index([email])
   @@index([deletedAt])
-}
-
-model Session {
-  id           String   @id @default(cuid())
-  userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  sessionToken String   @unique
-  expiresAt    DateTime
-  createdAt    DateTime @default(now())
-
-  @@index([userId])
-  @@index([sessionToken])
 }
 
 // Interview model: tracks interviews owned by a single user

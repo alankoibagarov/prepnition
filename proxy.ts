@@ -3,17 +3,17 @@ import {
   ACCESS_TOKEN_COOKIE,
   PROTECTED_API_PREFIX,
 } from "@/lib/auth/constants";
-import { getUserBySessionToken } from "@/lib/auth/users";
+import { verifyAccessToken } from "@/lib/auth/jwt";
 import { RESPONSE_CODES } from "./lib/auth/enums";
 
 export async function proxy(request: NextRequest) {
-  const sessionToken = request.cookies.get(ACCESS_TOKEN_COOKIE)?.value;
-  const user = sessionToken ? await getUserBySessionToken(sessionToken) : null;
+  const accessToken = request.cookies.get(ACCESS_TOKEN_COOKIE)?.value;
+  const payload = accessToken ? await verifyAccessToken(accessToken) : null;
 
-  if (user) {
+  if (payload) {
     const requestHeaders = new Headers(request.headers);
-    requestHeaders.set("x-user-id", user.id);
-    requestHeaders.set("x-user-role", user.role);
+    requestHeaders.set("x-user-id", payload.sub);
+    requestHeaders.set("x-user-role", payload.role);
     return NextResponse.next({ request: { headers: requestHeaders } });
   }
 
