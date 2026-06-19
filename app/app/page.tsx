@@ -14,7 +14,7 @@ import { hasRole } from "@/lib/auth/permissions";
 import { requireAuth } from "@/lib/auth/session";
 import { cn } from "@/lib/utils";
 
-export default async function Dashboard() {
+export default async function AppHome() {
   const session = await requireAuth();
   const isAdmin = hasRole(session, "admin");
 
@@ -69,10 +69,6 @@ export default async function Dashboard() {
         >
           Back to home
         </Link>
-      </div>
-
-      <div className="container mx-auto p-6">
-        <InterviewsTable />
       </div>
     </div>
   );

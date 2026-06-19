@@ -47,10 +47,7 @@ export default function Home() {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4 px-0 sm:flex-row">
-            <Link
-              href="/dashboard"
-              className={cn(buttonVariants(), "md:w-[158px]")}
-            >
+            <Link href="/app" className={cn(buttonVariants(), "md:w-[158px]")}>
               Dashboard
             </Link>
             <Link

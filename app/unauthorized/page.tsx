@@ -10,10 +10,7 @@ export default function UnauthorizedPage() {
         You are signed in, but your account does not have permission to view
         this page.
       </p>
-      <Link
-        href="/dashboard"
-        className={cn(buttonVariants({ variant: "outline" }))}
-      >
+      <Link href="/app" className={cn(buttonVariants({ variant: "outline" }))}>
         Back to dashboard
       </Link>
     </div>
