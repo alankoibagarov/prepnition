@@ -3,8 +3,18 @@
 import { FileText, Home } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { LogoutButton } from "@/app/components/LogoutButton";
+import type { AuthUser } from "@/types/auth";
+import { Badge } from "./ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
 
-export default function Sidebar() {
+export default function Sidebar({ session }: { session: AuthUser }) {
   const pathname = usePathname();
 
   const items = [
@@ -15,40 +25,56 @@ export default function Sidebar() {
   return (
     <>
       {/* Desktop left sidebar */}
-      <aside className="hidden md:fixed md:inset-y-0 md:left-0 md:w-56 md:flex md:flex-col md:gap-4 md:py-6 md:px-3 border-r border-sidebar-border bg-sidebar overflow-hidden h-screen">
+      <aside className="hidden md:fixed md:inset-y-0 md:left-0 md:w-56 md:flex md:flex-col md:gap-4 md:py-6 md:px-3 border-r border-sidebar-border bg-sidebar overflow-hidden h-screen justify-between">
         {/* Logo / brand */}
-        <div className="px-3 pb-4">
-          <Link href="/app" className="flex items-center gap-3 px-2 py-2">
-            <span className="inline-flex items-center justify-center w-8 h-8 rounded-md bg-sidebar-primary text-sidebar-primary-foreground font-bold">
-              P
-            </span>
-            <span className="text-lg font-semibold text-sidebar-foreground">
-              Prepnition
-            </span>
-          </Link>
+        <div>
+          <div className="px-3 pb-4">
+            <Link href="/app" className="flex items-center gap-3 px-2 py-2">
+              <span className="inline-flex items-center justify-center w-8 h-8 rounded-md bg-sidebar-primary text-sidebar-primary-foreground font-bold">
+                P
+              </span>
+              <span className="text-lg font-semibold text-sidebar-foreground">
+                Prepnition
+              </span>
+            </Link>
+          </div>
+
+          <nav aria-label="Main" className="flex flex-col gap-1 px-3">
+            {items.map((it) => {
+              const Icon = it.icon;
+              const active = pathname === it.href;
+              return (
+                <Link
+                  key={it.href}
+                  href={it.href}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-sidebar-ring transition-colors ${
+                    active
+                      ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent/40"
+                  }`}
+                  aria-current={active ? "page" : undefined}
+                >
+                  <Icon className="w-5 h-5" aria-hidden />
+                  <span>{it.label}</span>
+                </Link>
+              );
+            })}
+          </nav>
         </div>
 
-        <nav aria-label="Main" className="flex flex-col gap-1 px-3">
-          {items.map((it) => {
-            const Icon = it.icon;
-            const active = pathname === it.href;
-            return (
-              <Link
-                key={it.href}
-                href={it.href}
-                className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-sidebar-ring transition-colors ${
-                  active
-                    ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                    : "text-sidebar-foreground hover:bg-sidebar-accent/40"
-                }`}
-                aria-current={active ? "page" : undefined}
-              >
-                <Icon className="w-5 h-5" aria-hidden />
-                <span>{it.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
+        <Card className="mt-6">
+          <CardHeader>
+            <CardDescription>Signed in as</CardDescription>
+            <CardTitle>{session.email}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Role:</span>
+              <Badge variant="secondary">{session.role}</Badge>
+              <LogoutButton />
+            </div>
+          </CardContent>
+        </Card>
       </aside>
 
       {/* Mobile bottom nav */}
