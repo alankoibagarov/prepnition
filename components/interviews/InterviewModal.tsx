@@ -82,15 +82,6 @@ export default function InterviewModal({
     });
   }, [interview]);
 
-  useEffect(() => {
-    if (open) {
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = "unset";
-      };
-    }
-  }, [open]);
-
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -100,7 +91,11 @@ export default function InterviewModal({
         onClick={onClose}
         aria-label="Close modal"
       />
-      <Card className={cn("z-50 max-w-7xl w-full mx-4")}>
+      <Card
+        className={cn(
+          "z-50 max-w-7xl max-h-[90dvh] w-full mx-4 overflow-y-auto",
+        )}
+      >
         <CardContent>
           <div className="flex flex-col md:flex-row gap-8">
             <div className="space-y-2 flex-2">
