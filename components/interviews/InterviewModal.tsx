@@ -92,9 +92,7 @@ export default function InterviewModal({
         aria-label="Close modal"
       />
       <Card
-        className={cn(
-          "z-50 max-w-7xl max-h-[90dvh] w-full mx-4 overflow-y-auto",
-        )}
+        className={cn("z-50 max-w-7xl max-h-full w-full mx-4 overflow-y-auto")}
       >
         <CardContent>
           <div className="flex flex-col md:flex-row gap-8">
@@ -185,18 +183,6 @@ export default function InterviewModal({
                           setModalForm({
                             ...modalForm,
                             company: e.currentTarget.value,
-                          });
-                        }}
-                      />
-                    </Field>
-                    <Field>
-                      <FieldLabel>Notes:</FieldLabel>
-                      <Textarea
-                        value={modalForm.notes}
-                        onChange={(e) => {
-                          setModalForm({
-                            ...modalForm,
-                            notes: e.currentTarget.value,
                           });
                         }}
                       />
@@ -303,7 +289,7 @@ export default function InterviewModal({
             <Separator orientation="vertical" className="hidden md:block" />
             <div className="space-y-2 flex-1 flex flex-col">
               <strong className="">History:</strong>
-              <div className="max-h-165 overflow-auto">
+              <div className="max-h-[70dvh] overflow-auto">
                 {interview?.history && interview.history.length > 0 ? (
                   interview.history.map((h) => (
                     <div key={h.id} className="mb-2 p-2 border rounded">
