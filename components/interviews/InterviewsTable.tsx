@@ -1,5 +1,5 @@
 "use client";
-import { Edit, TableOfContents, Trash, ViewIcon } from "lucide-react";
+import { Plus, RefreshCw, TableOfContents, Trash } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -59,6 +59,18 @@ export default function InterviewsTable() {
     setDeleteModalOpen(true);
   }
 
+  async function openAddInterview() {
+    try {
+      setSelected(null);
+      setModalOpen(true);
+    } catch (e) {
+      console.error(e);
+      // fallback: close modal if error
+      setSelected(null);
+      setModalOpen(false);
+    }
+  }
+
   async function deleteInterview(id: string) {
     try {
       const res = await fetch(`/api/interviews/${id}`, { method: "DELETE" });
@@ -106,8 +118,17 @@ export default function InterviewsTable() {
         <CardTitle>Interviews</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="mb-4 flex justify-end">
+        <div className="mb-4 flex gap-4 justify-end">
+          <Button
+            onClick={() => openAddInterview()}
+            disabled={loading}
+            variant="outline"
+          >
+            <Plus />
+            Add Interview
+          </Button>
           <Button onClick={() => load()} disabled={loading} variant="outline">
+            <RefreshCw />
             Refresh
           </Button>
         </div>

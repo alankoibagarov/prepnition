@@ -44,8 +44,9 @@ export default function InterviewModal({
 
   const hasAnyChanges = Object.keys(modalForm).some(
     (key) =>
+      interview !== null &&
       modalForm[key as keyof typeof modalForm] !==
-      interview?.[key as keyof Interview],
+        interview?.[key as keyof Interview],
   );
 
   const formatDate = (dateStr: string | null | undefined) => {
@@ -287,36 +288,38 @@ export default function InterviewModal({
               </form>
             </div>
             <Separator orientation="vertical" className="hidden md:block" />
-            <div className="space-y-2 flex-1 flex flex-col">
-              <strong className="">History:</strong>
-              <div className="max-h-[70dvh] overflow-auto">
-                {interview?.history && interview.history.length > 0 ? (
-                  interview.history.map((h) => (
-                    <div key={h.id} className="mb-2 p-2 border rounded">
-                      <div className="flex justify-between text-sm">
-                        <div className="font-medium">{h.action}</div>
-                        <div className="text-muted-foreground">
-                          {formatDate(h.createdAt)}
+            {interview && (
+              <div className="space-y-2 flex-1 flex flex-col">
+                <strong className="">History:</strong>
+                <div className="max-h-[70dvh] overflow-auto">
+                  {interview?.history && interview.history.length > 0 ? (
+                    interview.history.map((h) => (
+                      <div key={h.id} className="mb-2 p-2 border rounded">
+                        <div className="flex justify-between text-sm">
+                          <div className="font-medium">{h.action}</div>
+                          <div className="text-muted-foreground">
+                            {formatDate(h.createdAt)}
+                          </div>
+                        </div>
+                        <div className="mt-1 text-xs">
+                          {Object.entries(h.changes).map(([field, val]) => (
+                            <div key={field}>
+                              <strong>{capitalize(field)}:</strong>{" "}
+                              {String((val as any).before ?? "—")} →{" "}
+                              {String((val as any).after ?? "—")}
+                            </div>
+                          ))}
                         </div>
                       </div>
-                      <div className="mt-1 text-xs">
-                        {Object.entries(h.changes).map(([field, val]) => (
-                          <div key={field}>
-                            <strong>{capitalize(field)}:</strong>{" "}
-                            {String((val as any).before ?? "—")} →{" "}
-                            {String((val as any).after ?? "—")}
-                          </div>
-                        ))}
-                      </div>
+                    ))
+                  ) : (
+                    <div className="text-sm text-muted-foreground">
+                      No history
                     </div>
-                  ))
-                ) : (
-                  <div className="text-sm text-muted-foreground">
-                    No history
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
           <Separator className="my-4" />
           <div
