@@ -20,7 +20,7 @@ export default function InterviewFunnel() {
     let mounted = true;
     async function load() {
       try {
-        const res = await fetch("/api/interviews");
+        const res = await fetch("/api/protected/interviews");
         const data = await res.json();
         if (mounted) setInterviews(data.interviews ?? []);
       } catch (e) {

@@ -20,7 +20,7 @@ export default function InterviewsTable() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/interviews");
+      const res = await fetch("/api/protected/interviews");
       if (!res.ok) throw new Error("Failed to load");
       const data = await res.json();
       setInterviews(data.interviews ?? []);
@@ -37,7 +37,7 @@ export default function InterviewsTable() {
 
   async function openInterview(id: string) {
     try {
-      const res = await fetch(`/api/interviews/${id}`);
+      const res = await fetch(`/api/protected/interviews/${id}`);
       if (!res.ok) throw new Error("Not found");
       const data = await res.json();
       setSelected(
@@ -73,7 +73,9 @@ export default function InterviewsTable() {
 
   async function deleteInterview(id: string) {
     try {
-      const res = await fetch(`/api/interviews/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/protected/interviews/${id}`, {
+        method: "DELETE",
+      });
       if (!res.ok) throw new Error("Not found");
       setSelected(null);
       setDeleteModalOpen(false);
@@ -88,7 +90,7 @@ export default function InterviewsTable() {
 
   async function updateInterview(id: string, updates: Partial<Interview>) {
     try {
-      const res = await fetch(`/api/interviews/${id}`, {
+      const res = await fetch(`/api/protected/interviews/${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

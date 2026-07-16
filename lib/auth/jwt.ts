@@ -1,5 +1,5 @@
 import { jwtVerify, SignJWT } from "jose";
-import type { RefreshTokenPayload, TokenPayload } from "@/types/auth";
+import type { TokenPayload } from "@/types/auth";
 import { ACCESS_TOKEN_TTL, REFRESH_TOKEN_TTL } from "./constants";
 
 function getAccessSecret(): Uint8Array {
@@ -34,10 +34,15 @@ export async function signAccessToken(payload: TokenPayload): Promise<string> {
     .sign(getAccessSecret());
 }
 
-export async function signRefreshToken(userId: string): Promise<string> {
-  return new SignJWT({})
+export async function signRefreshToken(payload: TokenPayload): Promise<string> {
+  return new SignJWT({
+    email: payload.email,
+    firstName: payload.firstName,
+    lastName: payload.lastName,
+    role: payload.role,
+  })
     .setProtectedHeader({ alg: "HS256" })
-    .setSubject(userId)
+    .setSubject(payload.sub)
     .setIssuedAt()
     .setExpirationTime(REFRESH_TOKEN_TTL)
     .sign(getRefreshSecret());
@@ -48,6 +53,7 @@ export async function verifyAccessToken(
 ): Promise<TokenPayload | null> {
   try {
     const { payload } = await jwtVerify(token, getAccessSecret());
+    console.log("Access token payload:", payload);
     if (
       typeof payload.sub !== "string" ||
       typeof payload.email !== "string" ||
@@ -71,13 +77,25 @@ export async function verifyAccessToken(
 
 export async function verifyRefreshToken(
   token: string,
-): Promise<RefreshTokenPayload | null> {
+): Promise<TokenPayload | null> {
   try {
     const { payload } = await jwtVerify(token, getRefreshSecret());
-    if (typeof payload.sub !== "string") {
+    if (
+      typeof payload.sub !== "string" ||
+      typeof payload.email !== "string" ||
+      (payload.role !== "user" && payload.role !== "admin")
+    ) {
       return null;
     }
-    return { sub: payload.sub };
+    return {
+      sub: payload.sub,
+      email: payload.email,
+      firstName:
+        typeof payload.firstName === "string" ? payload.firstName : undefined,
+      lastName:
+        typeof payload.lastName === "string" ? payload.lastName : undefined,
+      role: payload.role,
+    };
   } catch {
     return null;
   }

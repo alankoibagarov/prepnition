@@ -1,4 +1,4 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import type { NextResponse } from "next/server";
 import {
   ACCESS_TOKEN_COOKIE,
@@ -28,7 +28,7 @@ export function setAuthCookies(
 
   response.cookies.set(REFRESH_TOKEN_COOKIE, refreshToken, {
     ...baseCookieOptions,
-    path: "/api/auth",
+    path: "/",
     maxAge: REFRESH_TOKEN_MAX_AGE,
   });
 }
@@ -53,14 +53,24 @@ export function clearAuthCookies(response: NextResponse): void {
 
   response.cookies.set(REFRESH_TOKEN_COOKIE, "", {
     ...baseCookieOptions,
-    path: "/api/auth",
+    path: "/",
     maxAge: 0,
   });
 }
 
 export async function getAccessToken(): Promise<string | undefined> {
+  // First check if proxy refreshed the token (passed via header)
+  const headersList = await headers();
+  const tokenFromHeader = headersList.get("x-access-token");
+  if (tokenFromHeader) {
+    return tokenFromHeader;
+  }
+
+  // Fall back to cookie
   const cookieStore = await cookies();
-  return cookieStore.get(ACCESS_TOKEN_COOKIE)?.value;
+  const tokenFromCookie = cookieStore.get(ACCESS_TOKEN_COOKIE)?.value;
+
+  return tokenFromCookie;
 }
 
 export async function getRefreshToken(): Promise<string | undefined> {
