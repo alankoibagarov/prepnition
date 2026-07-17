@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { capitalize } from "@/app/helpers/string";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Interview } from "@/types/interview";
 
@@ -44,11 +45,7 @@ export default function InterviewFunnel() {
     if (totals[i.status] !== undefined) totals[i.status]++;
   });
 
-  // Compute conversion rates between adjacent stages (current counts)
-  const counts = STAGES.map((s) => totals[s] ?? 0);
-
   // Compute transition counts using history: for each interview, reconstruct statuses seen over time
-  const transitionCounts: number[] = STAGES.map(() => 0);
   const everSeenCounts: number[] = STAGES.map(() => 0);
 
   interviews.forEach((i) => {
@@ -86,17 +83,6 @@ export default function InterviewFunnel() {
     for (let idx = 0; idx < STAGES.length; idx++) {
       if (seenSet.has(STAGES[idx] as string)) everSeenCounts[idx] += 1;
     }
-
-    // For each adjacent stage pair, check if seen contains prev before cur
-    for (let idx = 1; idx < STAGES.length; idx++) {
-      const prev = STAGES[idx - 1];
-      const cur = STAGES[idx];
-      const prevIndex = seen.indexOf(prev as string);
-      const curIndex = seen.indexOf(cur as string);
-      if (prevIndex !== -1 && curIndex !== -1 && prevIndex < curIndex) {
-        transitionCounts[idx] += 1;
-      }
-    }
   });
 
   return (
@@ -110,22 +96,22 @@ export default function InterviewFunnel() {
         ) : (
           <div className="flex flex-col gap-4">
             {STAGES.map((stage, idx) => {
-              const count = counts[idx] ?? 0;
-              const prev = idx === 0 ? count : counts[idx - 1];
+              const count = everSeenCounts[idx] ?? 0;
+              const prev = idx === 0 ? count : everSeenCounts[idx - 1];
               const conversion =
                 idx === 0
                   ? 100
                   : prev > 0
                     ? Math.round((count / prev) * 100)
                     : 0;
-              const baseline = counts[0] > 0 ? counts[0] : 1;
+              const baseline = everSeenCounts[0] > 0 ? everSeenCounts[0] : 1;
               const relative = Math.round((count / baseline) * 100);
 
               return (
                 <div key={stage} className="flex flex-col items-center w-full">
                   <div className="text-center mb-2 px-2">
                     <span className="text-sm font-medium text-muted-foreground block">
-                      {stage.toLowerCase()}
+                      {capitalize(stage)}
                     </span>
                   </div>
 
@@ -141,14 +127,10 @@ export default function InterviewFunnel() {
 
                   <div className="text-center mt-2">
                     <div className="text-sm font-semibold">
-                      {count}{" "}
-                      <span className="text-xs text-muted-foreground">
-                        (ever: {everSeenCounts[idx]})
-                      </span>
+                      {everSeenCounts[idx]}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {conversion}% from previous — {transitionCounts[idx]}{" "}
-                      transitioned
+                      {conversion}% from previous stage
                     </div>
                   </div>
                 </div>

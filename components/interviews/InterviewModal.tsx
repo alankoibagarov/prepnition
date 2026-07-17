@@ -2,6 +2,7 @@
 import { format } from "date-fns";
 import { ChevronDownIcon } from "lucide-react";
 import { useEffect, useState } from "react";
+import { capitalize } from "@/app/helpers/string";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -54,9 +55,6 @@ export default function InterviewModal({
     const date = new Date(dateStr);
     return format(date, "PPPpp");
   };
-
-  const capitalize = (str: string) =>
-    str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 
   const interviewStatuses = Object.values(InterviewStatus).map((status) => ({
     value: status,
