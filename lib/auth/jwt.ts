@@ -53,7 +53,6 @@ export async function verifyAccessToken(
 ): Promise<TokenPayload | null> {
   try {
     const { payload } = await jwtVerify(token, getAccessSecret());
-    console.log("Access token payload:", payload);
     if (
       typeof payload.sub !== "string" ||
       typeof payload.email !== "string" ||

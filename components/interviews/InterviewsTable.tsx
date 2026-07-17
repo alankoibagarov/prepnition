@@ -99,7 +99,6 @@ export default function InterviewsTable() {
       });
       if (!res.ok) throw new Error("Not found");
       const data = await res.json();
-      console.log(data);
       setSelected(
         data.interview
           ? { ...data.interview, history: data.history ?? [] }
