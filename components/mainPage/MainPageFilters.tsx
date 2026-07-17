@@ -21,7 +21,7 @@ export default function MainPageFilters() {
       <CardContent className="">
         <Field>
           <FieldLabel htmlFor="date-picker-optional">
-            Next Interview Date
+            Choose a date range
           </FieldLabel>
           <Popover open={openCalendar} onOpenChange={setOpenCalendar}>
             <PopoverTrigger className={buttonVariants({ variant: "outline" })}>
