@@ -4,6 +4,7 @@ import { FileText, Home } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LogoutButton } from "@/app/components/LogoutButton";
+import { capitalize } from "@/app/helpers/string";
 import type { AuthUser } from "@/types/auth";
 import { Badge } from "./ui/badge";
 import {
@@ -65,12 +66,15 @@ export default function Sidebar({ session }: { session: AuthUser }) {
         <Card className="mt-6">
           <CardHeader>
             <CardDescription>Signed in as</CardDescription>
+            <CardTitle>
+              {session.firstName} {session.lastName}
+            </CardTitle>
             <CardTitle>{session.email}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">Role:</span>
-              <Badge variant="secondary">{session.role}</Badge>
+              <Badge variant="secondary">{capitalize(session.role)}</Badge>
               <LogoutButton />
             </div>
           </CardContent>
