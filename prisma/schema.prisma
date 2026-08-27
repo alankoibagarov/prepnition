@@ -7,15 +7,24 @@ datasource db {
   provider = "sqlite"
 }
 
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
 model User {
   id            String       @id @default(cuid())
   email         String       @unique
   firstName     String
   lastName      String
   passwordHash  String
+  avatarUrl     String
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
   deletedAt     DateTime?    // Soft delete support
+  lastLoginAt   DateTime?    // Last login timestamp
+  status        UserStatus   @default(ACTIVE)
   interviews    Interview[]
 
   @@index([email])

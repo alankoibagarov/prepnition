@@ -19,6 +19,7 @@ export async function getSession(): Promise<AuthUser | null> {
     email: payload.email,
     firstName: payload.firstName || "",
     lastName: payload.lastName || "",
+    avatarUrl: payload.avatarUrl || "",
   };
 }
 

@@ -49,6 +49,7 @@ export async function findUserById(id: string): Promise<AuthUser | null> {
     email: user.email,
     firstName: user.firstName,
     lastName: user.lastName,
+    avatarUrl: user.avatarUrl,
   };
 }
 
@@ -80,6 +81,7 @@ export async function validateCredentials(
     email: user.email,
     firstName: user.firstName,
     lastName: user.lastName,
+    avatarUrl: user.avatarUrl,
   };
 }
 

@@ -3,6 +3,7 @@ export type AuthUser = {
   email: string;
   firstName: string;
   lastName: string;
+  avatarUrl: string;
 };
 
 export type TokenPayload = {
@@ -10,6 +11,7 @@ export type TokenPayload = {
   email: string;
   firstName?: string;
   lastName?: string;
+  avatarUrl?: string;
 };
 
 export type RefreshTokenPayload = {

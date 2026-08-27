@@ -58,7 +58,7 @@ function LoginForm() {
         <CardHeader>
           <CardTitle className="text-2xl">Sign in</CardTitle>
           <CardDescription>
-            Demo accounts: user@demo.com or admin@demo.com (password: password)
+            Demo accounts: user@demo.com or (password: password)
           </CardDescription>
         </CardHeader>
         <CardContent>

@@ -61,6 +61,8 @@ export async function verifyAccessToken(
         typeof payload.firstName === "string" ? payload.firstName : undefined,
       lastName:
         typeof payload.lastName === "string" ? payload.lastName : undefined,
+      avatarUrl:
+        typeof payload.avatarUrl === "string" ? payload.avatarUrl : undefined,
     };
   } catch {
     return null;

@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { LogoutButton } from "@/app/components/LogoutButton";
 import { capitalize } from "@/app/helpers/string";
 import type { AuthUser } from "@/types/auth";
-import { Badge } from "./ui/badge";
 import {
   Card,
   CardContent,
@@ -66,9 +65,12 @@ export default function Sidebar({ session }: { session: AuthUser }) {
         <Card className="mt-6">
           <CardHeader>
             <CardDescription>Signed in as</CardDescription>
-            <CardTitle>
-              {session.firstName} {session.lastName}
-            </CardTitle>
+            {session.avatarUrl && <CardTitle>{session.avatarUrl}</CardTitle>}
+            {(session.firstName || session.lastName) && (
+              <CardTitle>
+                {capitalize(session.firstName)} {capitalize(session.lastName)}
+              </CardTitle>
+            )}
             <CardTitle>{session.email}</CardTitle>
           </CardHeader>
           <CardContent>
