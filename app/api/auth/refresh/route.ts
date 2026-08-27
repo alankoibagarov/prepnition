@@ -26,7 +26,6 @@ export async function POST() {
     email: user.email,
     firstName: user.firstName,
     lastName: user.lastName,
-    role: user.role,
   });
 
   const response = jsonResponse({ user });

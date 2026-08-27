@@ -20,14 +20,12 @@ async function seed() {
       firstName: "Demo",
       lastName: "User",
       passwordHash: await bcrypt.hash(DEMO_PASSWORD, 10),
-      role: "user",
     },
     {
       email: "admin@demo.com".toLowerCase(),
       firstName: "Demo",
       lastName: "Admin",
       passwordHash: await bcrypt.hash(DEMO_PASSWORD, 10),
-      role: "admin",
     },
   ];
 

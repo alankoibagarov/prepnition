@@ -35,7 +35,6 @@ export async function proxy(request: NextRequest) {
             // Token refresh successful; create response with headers
             const requestHeaders = new Headers(request.headers);
             requestHeaders.set("x-user-id", payload.sub);
-            requestHeaders.set("x-user-role", payload.role);
             requestHeaders.set("x-access-token", newAccessToken);
 
             const response = NextResponse.next({
@@ -63,7 +62,6 @@ export async function proxy(request: NextRequest) {
   if (payload) {
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("x-user-id", payload.sub);
-    requestHeaders.set("x-user-role", payload.role);
     return NextResponse.next({ request: { headers: requestHeaders } });
   }
 

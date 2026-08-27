@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import type { AuthUser, Role } from "@/types/auth";
+import type { AuthUser } from "@/types/auth";
 
 export type StoredUser = AuthUser & {
   passwordHash: string;
@@ -26,7 +26,6 @@ export async function findUserByEmail(email: string): Promise<AuthUser | null> {
     email: user.email,
     firstName: user.firstName,
     lastName: user.lastName,
-    role: user.role as Role,
   };
 }
 
@@ -50,7 +49,6 @@ export async function findUserById(id: string): Promise<AuthUser | null> {
     email: user.email,
     firstName: user.firstName,
     lastName: user.lastName,
-    role: user.role as Role,
   };
 }
 
@@ -82,7 +80,6 @@ export async function validateCredentials(
     email: user.email,
     firstName: user.firstName,
     lastName: user.lastName,
-    role: user.role as Role,
   };
 }
 
@@ -94,7 +91,6 @@ export async function createUser(
   password: string,
   firstName: string,
   lastName: string,
-  role: Role = "user",
 ): Promise<AuthUser> {
   const passwordHash = await bcrypt.hash(password, 10);
 
@@ -104,7 +100,6 @@ export async function createUser(
       firstName,
       lastName,
       passwordHash,
-      role,
     },
   });
 
@@ -113,6 +108,5 @@ export async function createUser(
     email: user.email,
     firstName: user.firstName,
     lastName: user.lastName,
-    role: user.role as Role,
   };
 }

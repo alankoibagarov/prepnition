@@ -37,14 +37,12 @@ export async function POST(request: Request) {
     email: user.email,
     firstName: user.firstName,
     lastName: user.lastName,
-    role: user.role,
   });
   const refreshToken = await signRefreshToken({
     sub: user.id,
     email: user.email,
     firstName: user.firstName,
     lastName: user.lastName,
-    role: user.role,
   });
 
   const response = jsonResponse({ user });

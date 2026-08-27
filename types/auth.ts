@@ -1,11 +1,8 @@
-export type Role = "user" | "admin";
-
 export type AuthUser = {
   id: string;
   email: string;
   firstName: string;
   lastName: string;
-  role: Role;
 };
 
 export type TokenPayload = {
@@ -13,7 +10,6 @@ export type TokenPayload = {
   email: string;
   firstName?: string;
   lastName?: string;
-  role: Role;
 };
 
 export type RefreshTokenPayload = {

@@ -25,7 +25,6 @@ export async function signAccessToken(payload: TokenPayload): Promise<string> {
     email: payload.email,
     firstName: payload.firstName,
     lastName: payload.lastName,
-    role: payload.role,
   })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(payload.sub)
@@ -39,7 +38,6 @@ export async function signRefreshToken(payload: TokenPayload): Promise<string> {
     email: payload.email,
     firstName: payload.firstName,
     lastName: payload.lastName,
-    role: payload.role,
   })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(payload.sub)
@@ -53,11 +51,7 @@ export async function verifyAccessToken(
 ): Promise<TokenPayload | null> {
   try {
     const { payload } = await jwtVerify(token, getAccessSecret());
-    if (
-      typeof payload.sub !== "string" ||
-      typeof payload.email !== "string" ||
-      (payload.role !== "user" && payload.role !== "admin")
-    ) {
+    if (typeof payload.sub !== "string" || typeof payload.email !== "string") {
       return null;
     }
     return {
@@ -67,7 +61,6 @@ export async function verifyAccessToken(
         typeof payload.firstName === "string" ? payload.firstName : undefined,
       lastName:
         typeof payload.lastName === "string" ? payload.lastName : undefined,
-      role: payload.role,
     };
   } catch {
     return null;
@@ -79,11 +72,7 @@ export async function verifyRefreshToken(
 ): Promise<TokenPayload | null> {
   try {
     const { payload } = await jwtVerify(token, getRefreshSecret());
-    if (
-      typeof payload.sub !== "string" ||
-      typeof payload.email !== "string" ||
-      (payload.role !== "user" && payload.role !== "admin")
-    ) {
+    if (typeof payload.sub !== "string" || typeof payload.email !== "string") {
       return null;
     }
     return {
@@ -93,7 +82,6 @@ export async function verifyRefreshToken(
         typeof payload.firstName === "string" ? payload.firstName : undefined,
       lastName:
         typeof payload.lastName === "string" ? payload.lastName : undefined,
-      role: payload.role,
     };
   } catch {
     return null;

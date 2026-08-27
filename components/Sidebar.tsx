@@ -73,8 +73,6 @@ export default function Sidebar({ session }: { session: AuthUser }) {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Role:</span>
-              <Badge variant="secondary">{capitalize(session.role)}</Badge>
               <LogoutButton />
             </div>
           </CardContent>
