@@ -25,6 +25,7 @@ export async function signAccessToken(payload: TokenPayload): Promise<string> {
     email: payload.email,
     firstName: payload.firstName,
     lastName: payload.lastName,
+    avatarUrl: payload.avatarUrl,
   })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(payload.sub)
@@ -38,6 +39,7 @@ export async function signRefreshToken(payload: TokenPayload): Promise<string> {
     email: payload.email,
     firstName: payload.firstName,
     lastName: payload.lastName,
+    avatarUrl: payload.avatarUrl,
   })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(payload.sub)
@@ -84,6 +86,8 @@ export async function verifyRefreshToken(
         typeof payload.firstName === "string" ? payload.firstName : undefined,
       lastName:
         typeof payload.lastName === "string" ? payload.lastName : undefined,
+      avatarUrl:
+        typeof payload.avatarUrl === "string" ? payload.avatarUrl : undefined,
     };
   } catch {
     return null;

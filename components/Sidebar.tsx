@@ -1,6 +1,7 @@
 "use client";
 
 import { FileText, Home } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LogoutButton } from "@/app/components/LogoutButton";
@@ -65,7 +66,15 @@ export default function Sidebar({ session }: { session: AuthUser }) {
         <Card className="mt-6">
           <CardHeader>
             <CardDescription>Signed in as</CardDescription>
-            {session.avatarUrl && <CardTitle>{session.avatarUrl}</CardTitle>}
+            <CardTitle>
+              <Image
+                src={session.avatarUrl || "/profile.png"}
+                alt={"Avatar"}
+                width={75}
+                height={75}
+                className="object-cover rounded rounded-full"
+              />
+            </CardTitle>
             {(session.firstName || session.lastName) && (
               <CardTitle>
                 {capitalize(session.firstName)} {capitalize(session.lastName)}

@@ -26,6 +26,7 @@ export async function findUserByEmail(email: string): Promise<AuthUser | null> {
     email: user.email,
     firstName: user.firstName,
     lastName: user.lastName,
+    avatarUrl: user.avatarUrl,
   };
 }
 
@@ -93,6 +94,7 @@ export async function createUser(
   password: string,
   firstName: string,
   lastName: string,
+  avatarUrl: string,
 ): Promise<AuthUser> {
   const passwordHash = await bcrypt.hash(password, 10);
 
@@ -102,6 +104,7 @@ export async function createUser(
       firstName,
       lastName,
       passwordHash,
+      avatarUrl,
     },
   });
 
@@ -110,5 +113,6 @@ export async function createUser(
     email: user.email,
     firstName: user.firstName,
     lastName: user.lastName,
+    avatarUrl: user.avatarUrl,
   };
 }

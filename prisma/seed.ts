@@ -19,7 +19,8 @@ async function seed() {
       email: "user@demo.com".toLowerCase(),
       firstName: "Demo",
       lastName: "User",
-      avatarUrl: "",
+      avatarUrl:
+        "https://img.magnific.com/premium-psd/man-with-scarf-around-his-neck-black-square-left_1322068-25397.jpg?semt=ais_hybrid&w=740&q=80",
       passwordHash: await bcrypt.hash(DEMO_PASSWORD, 10),
     },
   ];
