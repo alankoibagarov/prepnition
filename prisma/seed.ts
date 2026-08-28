@@ -41,7 +41,7 @@ async function seed() {
     userId: demoUser.id,
   };
 
-  const createdProfile = await prisma.candidateProfile.create({
+  const createdProfile = await prisma.candidateProfiles.create({
     data: demoProfile,
   });
 

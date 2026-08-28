@@ -25,14 +25,14 @@ model User {
   deletedAt     DateTime?    // Soft delete support
   lastLoginAt   DateTime?    // Last login timestamp
   status        UserStatus   @default(ACTIVE)
-  candidateProfile CandidateProfile?
+  candidateProfile CandidateProfiles?
 
   @@index([email])
   @@index([deletedAt])
 }
 
 
-model CandidateProfile {
+model CandidateProfiles {
   id    String @id @default(cuid())
   userId String @unique
   createdAt     DateTime     @default(now())
@@ -59,7 +59,7 @@ enum InterviewStatus {
 model Interview {
   id                String          @id @default(cuid())
   profileId         String
-  candidateProfile  CandidateProfile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  candidateProfile  CandidateProfiles   @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
   title       String
   company     String?
