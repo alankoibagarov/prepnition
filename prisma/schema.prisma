@@ -35,6 +35,9 @@ model User {
 model CandidateProfile {
   id    String @id @default(cuid())
   userId String @unique
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  
   interviews    Interview[]
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
