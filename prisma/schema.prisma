@@ -38,13 +38,13 @@ model CandidateProfiles {
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
   
-  interviews    Interview[]
+  applications    Applications[]
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-// Interview model: tracks interviews owned by a single user
-enum InterviewStatus {
+// Application statuses
+enum ApplicationStatus {
   CREATED
   APPLICATION
   SCREENING
@@ -56,7 +56,7 @@ enum InterviewStatus {
   OFFER
 }
 
-model Interview {
+model Applications {
   id                String          @id @default(cuid())
   profileId         String
   candidateProfile  CandidateProfiles   @relation(fields: [profileId], references: [id], onDelete: Cascade)
@@ -66,30 +66,30 @@ model Interview {
   companyUrl  String?
   position    String?
   scheduledAt DateTime?
-  status      InterviewStatus @default(CREATED)
+  status      ApplicationStatus @default(CREATED)
   notes       String?
 
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
   deletedAt   DateTime?
 
-  // Relation to InterviewHistory
-  histories    InterviewHistory[]
+  // Relation to ApplicationHistory
+  histories    ApplicationHistory[]
 
   @@index([profileId])
   @@index([scheduledAt])
   @@index([deletedAt])
 }
 
-model InterviewHistory {
+model ApplicationHistory {
   id          String   @id @default(cuid())
-  interviewId String
-  interview   Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  applicationId String
+  application   Applications @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   userId      String
   action      String
   changes     Json
   createdAt   DateTime @default(now())
 
-  @@index([interviewId])
+  @@index([applicationId])
   @@index([userId])
 }

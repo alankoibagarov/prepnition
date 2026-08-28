@@ -1,6 +1,6 @@
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import bcrypt from "bcryptjs";
-import { InterviewStatus, PrismaClient } from "../generated/prisma/client";
+import { ApplicationStatus, PrismaClient } from "../generated/prisma/client";
 
 const DEMO_PASSWORD = "password";
 
@@ -34,7 +34,7 @@ async function seed() {
     console.log(`✓ Created user: ${user.email}`);
   }
 
-  // Create demo interviews for the demo users (keep the original 10 for the first demo user, then add extras)
+  // Create demo applications for the demo users (keep the original 10 for the first demo user, then add extras)
   const demoUser = createdUsers[0];
 
   const demoProfile = {
@@ -46,9 +46,9 @@ async function seed() {
   });
 
   if (createdProfile) {
-    // Original 10 mock interviews for demo user (kept for backward compatibility)
+    // Original 10 mock applications for demo user (kept for backward compatibility)
     const now = Date.now();
-    const interviews = [
+    const applications = [
       {
         profileId: createdProfile.id,
         title: "Frontend Engineer Interview",
@@ -56,7 +56,7 @@ async function seed() {
         companyUrl: "https://www.acme.com",
         position: "Frontend Engineer",
         scheduledAt: new Date(now - 14 * 24 * 60 * 60 * 1000).toISOString(),
-        status: InterviewStatus.CREATED,
+        status: ApplicationStatus.CREATED,
         notes: "Onsite, focused on React and accessibility.",
       },
       {
@@ -66,7 +66,7 @@ async function seed() {
         companyUrl: "https://www.beta.com",
         position: "Backend Engineer",
         scheduledAt: new Date(now + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        status: InterviewStatus.CREATED,
+        status: ApplicationStatus.CREATED,
         notes: "Take-home challenge",
       },
       {
@@ -75,7 +75,7 @@ async function seed() {
         company: "Gamma Labs",
         position: "Product Engineer",
         scheduledAt: new Date(now + 2 * 24 * 60 * 60 * 1000).toISOString(),
-        status: InterviewStatus.CREATED,
+        status: ApplicationStatus.CREATED,
         notes: "30m phone screen.",
       },
       {
@@ -84,7 +84,7 @@ async function seed() {
         company: "Delta Data",
         position: "Data Engineer",
         scheduledAt: new Date(now + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        status: InterviewStatus.CREATED,
+        status: ApplicationStatus.CREATED,
         notes: "SQL & ETL topics.",
       },
       {
@@ -93,7 +93,7 @@ async function seed() {
         company: "Epsilon Mobile",
         position: "Mobile Engineer",
         scheduledAt: new Date(now - 3 * 24 * 60 * 60 * 1000).toISOString(),
-        status: InterviewStatus.CREATED,
+        status: ApplicationStatus.CREATED,
         notes: "Pairing exercise on iOS.",
       },
       {
@@ -102,7 +102,7 @@ async function seed() {
         company: "Zeta Ops",
         position: "DevOps Engineer",
         scheduledAt: new Date(now + 3 * 24 * 60 * 60 * 1000).toISOString(),
-        status: InterviewStatus.CREATED,
+        status: ApplicationStatus.CREATED,
         notes: "Kubernetes and infra.",
       },
       {
@@ -111,7 +111,7 @@ async function seed() {
         company: "Theta Works",
         position: "Fullstack Engineer",
         scheduledAt: new Date(now + 5 * 24 * 60 * 60 * 1000).toISOString(),
-        status: InterviewStatus.CREATED,
+        status: ApplicationStatus.CREATED,
         notes: "48h take-home project.",
       },
       {
@@ -120,7 +120,7 @@ async function seed() {
         company: "Iota Secure",
         position: "Security Engineer",
         scheduledAt: new Date(now + 10 * 24 * 60 * 60 * 1000).toISOString(),
-        status: InterviewStatus.CREATED,
+        status: ApplicationStatus.CREATED,
         notes: "Threat modeling discussion.",
       },
       {
@@ -129,7 +129,7 @@ async function seed() {
         company: "Kappa Reliability",
         position: "SRE",
         scheduledAt: new Date(now - 1 * 24 * 60 * 60 * 1000).toISOString(),
-        status: InterviewStatus.CREATED,
+        status: ApplicationStatus.CREATED,
         notes: "Culture fit and incident response.",
       },
       {
@@ -138,16 +138,16 @@ async function seed() {
         company: "Lambda Lead",
         position: "Engineering Manager",
         scheduledAt: new Date(now + 14 * 24 * 60 * 60 * 1000).toISOString(),
-        status: InterviewStatus.CREATED,
+        status: ApplicationStatus.CREATED,
         notes: "Leadership and org design.",
       },
     ];
 
-    await prisma.interview.createMany({ data: interviews });
-    console.log(`✓ Created demo interviews for ${createdProfile.id}`);
+    await prisma.applications.createMany({ data: applications });
+    console.log(`✓ Created demo applications for ${createdProfile.id}`);
 
-    // Helper to generate N mock interviews for a given user
-    const generateMockInterviewsForUser = (
+    // Helper to generate N mock applications for a given user
+    const generateMockApplicationsForUser = (
       profileId: string,
       count: number,
     ) => {
@@ -175,11 +175,11 @@ async function seed() {
         "SRE",
         "Engineering Manager",
       ];
-      const statuses: Array<InterviewStatus> = [
-        InterviewStatus.CREATED,
-        InterviewStatus.APPLICATION,
-        InterviewStatus.SCREENING,
-        InterviewStatus.TECHNICAL,
+      const statuses: Array<ApplicationStatus> = [
+        ApplicationStatus.CREATED,
+        ApplicationStatus.APPLICATION,
+        ApplicationStatus.SCREENING,
+        ApplicationStatus.TECHNICAL,
       ];
       const out: any[] = [];
       for (let i = 0; i < count; i++) {
@@ -206,11 +206,11 @@ async function seed() {
     };
 
     // Create 30 extra interviews for the demo user
-    const extraForDemo = generateMockInterviewsForUser(createdProfile.id, 30);
+    const extraForDemo = generateMockApplicationsForUser(createdProfile.id, 30);
     if (extraForDemo.length) {
-      await prisma.interview.createMany({ data: extraForDemo });
+      await prisma.applications.createMany({ data: extraForDemo });
       console.log(
-        `✓ Created ${extraForDemo.length} extra demo interviews for ${createdProfile.id}`,
+        `✓ Created ${extraForDemo.length} extra demo applications for ${createdProfile.id}`,
       );
     }
   }
