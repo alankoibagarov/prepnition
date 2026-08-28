@@ -25,10 +25,19 @@ model User {
   deletedAt     DateTime?    // Soft delete support
   lastLoginAt   DateTime?    // Last login timestamp
   status        UserStatus   @default(ACTIVE)
-  interviews    Interview[]
+  candidateProfile CandidateProfile?
 
   @@index([email])
   @@index([deletedAt])
+}
+
+
+model CandidateProfile {
+  id    String @id @default(cuid())
+  userId String @unique
+  interviews    Interview[]
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 // Interview model: tracks interviews owned by a single user
@@ -45,9 +54,9 @@ enum InterviewStatus {
 }
 
 model Interview {
-  id          String          @id @default(cuid())
-  userId      String
-  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String          @id @default(cuid())
+  profileId         String
+  candidateProfile  CandidateProfile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
 
   title       String
   company     String?
@@ -64,7 +73,7 @@ model Interview {
   // Relation to InterviewHistory
   histories    InterviewHistory[]
 
-  @@index([userId])
+  @@index([profileId])
   @@index([scheduledAt])
   @@index([deletedAt])
 }

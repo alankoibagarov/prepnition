@@ -37,12 +37,20 @@ async function seed() {
   // Create demo interviews for the demo users (keep the original 10 for the first demo user, then add extras)
   const demoUser = createdUsers[0];
 
-  if (demoUser) {
+  const demoProfile = {
+    userId: demoUser.id,
+  };
+
+  const createdProfile = await prisma.candidateProfile.create({
+    data: demoProfile,
+  });
+
+  if (createdProfile) {
     // Original 10 mock interviews for demo user (kept for backward compatibility)
     const now = Date.now();
     const interviews = [
       {
-        userId: demoUser.id,
+        profileId: createdProfile.id,
         title: "Frontend Engineer Interview",
         company: "Acme Corp",
         companyUrl: "https://www.acme.com",
@@ -52,7 +60,7 @@ async function seed() {
         notes: "Onsite, focused on React and accessibility.",
       },
       {
-        userId: demoUser.id,
+        profileId: createdProfile.id,
         title: "Backend Coding Challenge",
         company: "Beta Inc",
         companyUrl: "https://www.beta.com",
@@ -62,7 +70,7 @@ async function seed() {
         notes: "Take-home challenge",
       },
       {
-        userId: demoUser.id,
+        profileId: createdProfile.id,
         title: "Product Engineer Screen",
         company: "Gamma Labs",
         position: "Product Engineer",
@@ -71,7 +79,7 @@ async function seed() {
         notes: "30m phone screen.",
       },
       {
-        userId: demoUser.id,
+        profileId: createdProfile.id,
         title: "Data Engineer Interview",
         company: "Delta Data",
         position: "Data Engineer",
@@ -80,7 +88,7 @@ async function seed() {
         notes: "SQL & ETL topics.",
       },
       {
-        userId: demoUser.id,
+        profileId: createdProfile.id,
         title: "Mobile Engineer Pairing",
         company: "Epsilon Mobile",
         position: "Mobile Engineer",
@@ -89,7 +97,7 @@ async function seed() {
         notes: "Pairing exercise on iOS.",
       },
       {
-        userId: demoUser.id,
+        profileId: createdProfile.id,
         title: "DevOps Interview",
         company: "Zeta Ops",
         position: "DevOps Engineer",
@@ -98,7 +106,7 @@ async function seed() {
         notes: "Kubernetes and infra.",
       },
       {
-        userId: demoUser.id,
+        profileId: createdProfile.id,
         title: "Fullstack Take-home",
         company: "Theta Works",
         position: "Fullstack Engineer",
@@ -107,7 +115,7 @@ async function seed() {
         notes: "48h take-home project.",
       },
       {
-        userId: demoUser.id,
+        profileId: createdProfile.id,
         title: "Security Interview",
         company: "Iota Secure",
         position: "Security Engineer",
@@ -116,7 +124,7 @@ async function seed() {
         notes: "Threat modeling discussion.",
       },
       {
-        userId: demoUser.id,
+        profileId: createdProfile.id,
         title: "SRE Culture Fit",
         company: "Kappa Reliability",
         position: "SRE",
@@ -125,7 +133,7 @@ async function seed() {
         notes: "Culture fit and incident response.",
       },
       {
-        userId: demoUser.id,
+        profileId: createdProfile.id,
         title: "Engineering Manager Interview",
         company: "Lambda Lead",
         position: "Engineering Manager",
@@ -136,10 +144,13 @@ async function seed() {
     ];
 
     await prisma.interview.createMany({ data: interviews });
-    console.log(`✓ Created demo interviews for ${demoUser.email}`);
+    console.log(`✓ Created demo interviews for ${createdProfile.id}`);
 
     // Helper to generate N mock interviews for a given user
-    const generateMockInterviewsForUser = (userId: string, count: number) => {
+    const generateMockInterviewsForUser = (
+      profileId: string,
+      count: number,
+    ) => {
       const companies = [
         "Orion Tech",
         "Nebula Systems",
@@ -182,7 +193,7 @@ async function seed() {
         ).toISOString();
         const status = statuses[i % statuses.length];
         out.push({
-          userId,
+          profileId,
           title,
           company,
           position,
@@ -195,11 +206,11 @@ async function seed() {
     };
 
     // Create 30 extra interviews for the demo user
-    const extraForDemo = generateMockInterviewsForUser(demoUser.id, 30);
+    const extraForDemo = generateMockInterviewsForUser(createdProfile.id, 30);
     if (extraForDemo.length) {
       await prisma.interview.createMany({ data: extraForDemo });
       console.log(
-        `✓ Created ${extraForDemo.length} extra demo interviews for ${demoUser.email}`,
+        `✓ Created ${extraForDemo.length} extra demo interviews for ${createdProfile.id}`,
       );
     }
   }
