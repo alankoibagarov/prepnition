@@ -45,13 +45,9 @@ model CandidateProfiles {
 
 // Application statuses
 enum ApplicationStatus {
-  CREATED
-  APPLICATION
-  SCREENING
-  TECHNICAL
-  MANAGERIAL
+  DRAFT
+  ACTIVE
   REJECTED
-  GHOSTED
   WITHDRAWN
   OFFER
 }
@@ -60,13 +56,14 @@ model Applications {
   id                String          @id @default(cuid())
   profileId         String
   candidateProfile  CandidateProfiles   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  jobId String
+  job Jobs @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
-  title       String
-  company     String?
-  companyUrl  String?
-  position    String?
-  scheduledAt DateTime?
-  status      ApplicationStatus @default(CREATED)
+  status      ApplicationStatus @default(DRAFT)
+
+  appliedAt DateTime?
+  closedAt DateTime?
+  
   notes       String?
 
   createdAt   DateTime        @default(now())
@@ -76,9 +73,67 @@ model Applications {
   // Relation to ApplicationHistory
   histories    ApplicationHistory[]
 
+  interviews Interviews[]
+
   @@index([profileId])
-  @@index([scheduledAt])
+  @@index([jobId])
   @@index([deletedAt])
+}
+
+enum InterviewType {
+  TECHNICAL
+  MANAGERIAL
+  HR
+  BIAS
+  OTHER
+}
+
+enum InterviewStatus {
+  SCHEDULED
+  PASSED
+  FAILED
+  CANCELLED
+  MISSED
+}
+
+model Interviews {
+  id String @id @default(cuid())
+  applicationId String
+  application Applications @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  type InterviewType
+  title String
+  scheduledAt DateTime?
+  durationMinutes Int?
+  status InterviewStatus @default(SCHEDULED)
+  notes String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([applicationId])
+  @@index([scheduledAt])
+}
+
+model Jobs {
+  id String @id @default(cuid())
+  title String
+  description String
+  companyId String
+  company Companies @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  location String
+  salary String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  applications Applications[]
+}
+
+model Companies {
+  id String @id @default(cuid())
+  name String
+  url String
+
+  jobs Jobs[]
 }
 
 model ApplicationHistory {
