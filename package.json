@@ -9,11 +9,13 @@
     "lint": "biome check .",
     "format": "biome format --write .",
     "check": "biome check --write .",
+    "ts:check": "tsc --noEmit",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
+    "db:reset": "prisma migrate reset",
     "docker:dev": "docker compose --profile dev up --build",
     "docker:prod": "docker compose --profile prod up --build",
     "docker:down": "docker compose --profile dev --profile prod down"
