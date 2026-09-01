@@ -40,7 +40,7 @@ export default function InterviewModal({
     position: interview?.position ?? "",
     company: interview?.company ?? "",
     notes: interview?.notes ?? "",
-    status: interview?.status ?? InterviewStatus.CREATED,
+    status: interview?.status ?? InterviewStatus.DRAFT,
   });
 
   const hasAnyChanges = Object.keys(modalForm).some(
@@ -67,7 +67,7 @@ export default function InterviewModal({
       position: interview?.position ?? "",
       company: interview?.company ?? "",
       notes: interview?.notes ?? "",
-      status: interview?.status ?? InterviewStatus.CREATED,
+      status: interview?.status ?? InterviewStatus.DRAFT,
     });
   }
 
@@ -77,7 +77,7 @@ export default function InterviewModal({
       position: interview?.position ?? "",
       company: interview?.company ?? "",
       notes: interview?.notes ?? "",
-      status: interview?.status ?? InterviewStatus.CREATED,
+      status: interview?.status ?? InterviewStatus.DRAFT,
     });
   }, [interview]);
 
@@ -246,10 +246,13 @@ export default function InterviewModal({
                           }
                           onChange={(e) => {
                             const time = e.currentTarget.value;
-                            if (interview?.scheduledAt) {
+                            if (interview?.scheduledAt && time) {
                               const date = new Date(interview.scheduledAt);
                               const [hours, minutes] = time.split(":");
-                              date.setHours(parseInt(hours), parseInt(minutes));
+                              date.setHours(
+                                Number.parseInt(hours, 10),
+                                Number.parseInt(minutes, 10),
+                              );
                               setDate(date);
                             }
                           }}
@@ -300,13 +303,19 @@ export default function InterviewModal({
                           </div>
                         </div>
                         <div className="mt-1 text-xs">
-                          {Object.entries(h.changes).map(([field, val]) => (
-                            <div key={field}>
-                              <strong>{capitalize(field)}:</strong>{" "}
-                              {String((val as any).before ?? "—")} →{" "}
-                              {String((val as any).after ?? "—")}
-                            </div>
-                          ))}
+                          {Object.entries(h.changes).map(([field, val]) => {
+                            const change = val as
+                              | { before?: unknown; after?: unknown }
+                              | undefined;
+
+                            return (
+                              <div key={field}>
+                                <strong>{capitalize(field)}:</strong>{" "}
+                                {String(change?.before ?? "—")} →{" "}
+                                {String(change?.after ?? "—")}
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     ))

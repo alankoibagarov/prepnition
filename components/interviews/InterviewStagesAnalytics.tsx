@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { capitalize } from "@/app/helpers/string";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Interview, InterviewStatus } from "@/types/interview";
+import type { Interview } from "@/types/interview";
 
 const MAIN_STAGES = [
   "APPLICATION",
@@ -79,19 +79,21 @@ export default function InterviewStagesAnalytics() {
     });
 
     interviews.forEach((interview) => {
-      const history = (interview as any).history ?? [];
+      const history = interview.history ?? [];
       const sorted = [...history].sort(
-        (a: any, b: any) =>
+        (a, b) =>
           new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
       );
 
       const seenStages = new Set<string>();
-      sorted.forEach((h: any) => {
+      sorted.forEach((h) => {
         if (h?.changes?.status?.after) {
-          seenStages.add(h.changes.status.after);
+          seenStages.add(String(h.changes.status.after));
         }
       });
-      if (interview.status && MAIN_STAGES.includes(interview.status as any)) {
+      if (
+        MAIN_STAGES.includes(interview.status as (typeof MAIN_STAGES)[number])
+      ) {
         seenStages.add(interview.status);
       }
 
@@ -101,20 +103,22 @@ export default function InterviewStagesAnalytics() {
         }
       });
 
-      const currentStageIndex = MAIN_STAGES.findIndex(
-        (s) => s === interview.status,
+      const currentStageIndex = MAIN_STAGES.indexOf(
+        interview.status as (typeof MAIN_STAGES)[number],
       );
       if (currentStageIndex >= 0) {
         stageMap[interview.status].passedToNext += 1;
       } else if (
         interview.status === "REJECTED" ||
-        interview.status === "GHOSTED" ||
         interview.status === "WITHDRAWN"
       ) {
         const lastMainStage = MAIN_STAGES.find(
           (s) =>
-            sorted.some((h: any) => h?.changes?.status?.after === s) ||
-            interview.status === s,
+            sorted.some(
+              (h) =>
+                (h.changes.status as { after?: unknown } | undefined)?.after ===
+                s,
+            ) || interview.status === s,
         );
         if (lastMainStage) {
           stageMap[lastMainStage].rejectedOrDropped += 1;
@@ -196,17 +200,17 @@ export default function InterviewStagesAnalytics() {
     });
 
     interviews.forEach((interview) => {
-      const history = (interview as any).history ?? [];
+      const history = interview.history ?? [];
       const sorted = [...history].sort(
-        (a: any, b: any) =>
+        (a, b) =>
           new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
       );
 
       const stageEnteredAt: Record<string, Date> = {};
 
-      sorted.forEach((h: any) => {
+      sorted.forEach((h) => {
         if (h?.changes?.status?.after) {
-          const stage = h.changes.status.after;
+          const stage = String(h.changes.status.after);
           stageEnteredAt[stage] = new Date(h.createdAt);
         }
       });

@@ -1,11 +1,7 @@
 export enum InterviewStatus {
-  CREATED = "CREATED",
-  APPLICATION = "APPLICATION",
-  SCREENING = "SCREENING",
-  TECHNICAL = "TECHNICAL",
-  MANAGERIAL = "MANAGERIAL",
+  DRAFT = "DRAFT",
+  ACTIVE = "ACTIVE",
   REJECTED = "REJECTED",
-  GHOSTED = "GHOSTED",
   WITHDRAWN = "WITHDRAWN",
   OFFER = "OFFER",
 }
@@ -15,7 +11,7 @@ export type InterviewHistory = {
   interviewId: string;
   userId: string;
   action: "CREATE" | "UPDATE" | "DELETE";
-  changes: Record<string, { before: any; after: any }>;
+  changes: Record<string, { before: unknown; after: unknown }>;
   createdAt: string;
 };
 

@@ -1,14 +1,12 @@
-import type { ApplicationStatus, Prisma } from "@/generated/prisma/client";
+import { ApplicationStatus, type Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
-import type { InterviewStatus } from "@/types/interview";
 
 export type CreateInterviewInput = {
-  title: string;
-  company?: string;
-  position?: string;
-  scheduledAt?: Date | string | null;
-  status: InterviewStatus;
-  notes?: string;
+  jobId: string;
+  status?: ApplicationStatus;
+  appliedAt?: Date | string | null;
+  closedAt?: Date | string | null;
+  notes?: string | null;
 };
 
 export type UpdateInterviewInput = Partial<CreateInterviewInput>;
@@ -33,8 +31,8 @@ async function getProfileIdForUser(userId: string): Promise<string | null> {
   return profile?.id ?? null;
 }
 
-function toApplicationStatus(status: InterviewStatus): ApplicationStatus {
-  return status as ApplicationStatus;
+function toApplicationStatus(status?: ApplicationStatus): ApplicationStatus {
+  return status ?? ApplicationStatus.DRAFT;
 }
 
 function mapHistory(history: ApplicationWithHistories["histories"][number]) {
@@ -50,7 +48,7 @@ function mapApplicationToInterview(
   return {
     ...rest,
     userId,
-    status: rest.status as InterviewStatus,
+    status: rest.status,
     history: histories.map(mapHistory),
   };
 }
@@ -63,7 +61,7 @@ function mapApplicationRecord(
   return {
     ...rest,
     userId,
-    status: rest.status as InterviewStatus,
+    status: rest.status,
   };
 }
 
@@ -77,21 +75,19 @@ export async function createInterview(
     const application = await tx.applications.create({
       data: {
         profileId,
-        title: data.title,
-        company: data.company ?? null,
-        position: data.position ?? null,
-        scheduledAt: data.scheduledAt ? new Date(data.scheduledAt) : null,
+        jobId: data.jobId,
         status: toApplicationStatus(data.status),
+        appliedAt: data.appliedAt ? new Date(data.appliedAt) : null,
+        closedAt: data.closedAt ? new Date(data.closedAt) : null,
         notes: data.notes ?? null,
       },
     });
 
     const changes = {
-      title: { before: null, after: application.title },
-      company: { before: null, after: application.company },
-      position: { before: null, after: application.position },
-      scheduledAt: { before: null, after: application.scheduledAt },
+      jobId: { before: null, after: application.jobId },
       status: { before: null, after: application.status },
+      appliedAt: { before: null, after: application.appliedAt },
+      closedAt: { before: null, after: application.closedAt },
       notes: { before: null, after: application.notes },
     } satisfies Prisma.InputJsonObject;
 
@@ -120,7 +116,7 @@ export async function getInterviewsForUser(
   const { take = 50, skip = 0 } = opts || {};
   const applications = await prisma.applications.findMany({
     where: { profileId, deletedAt: null },
-    orderBy: { scheduledAt: "desc" },
+    orderBy: { createdAt: "desc" },
     take,
     skip,
     include: { histories: { orderBy: { createdAt: "asc" } } },
@@ -156,42 +152,10 @@ export async function updateInterview(
 
   const diff: Record<string, { before: unknown; after: unknown }> = {};
   if (
-    typeof changes.title !== "undefined" &&
-    changes.title !== existing.title
+    typeof changes.jobId !== "undefined" &&
+    changes.jobId !== existing.jobId
   ) {
-    diff.title = { before: existing.title, after: changes.title ?? null };
-  }
-  if (
-    typeof changes.company !== "undefined" &&
-    changes.company !== existing.company
-  ) {
-    diff.company = { before: existing.company, after: changes.company ?? null };
-  }
-  if (
-    typeof changes.position !== "undefined" &&
-    changes.position !== existing.position
-  ) {
-    diff.position = {
-      before: existing.position,
-      after: changes.position ?? null,
-    };
-  }
-  if (typeof changes.scheduledAt !== "undefined") {
-    const newDate = changes.scheduledAt
-      ? new Date(changes.scheduledAt)
-      : null;
-    const oldDate = existing.scheduledAt ?? null;
-    if (
-      (oldDate &&
-        newDate &&
-        oldDate.getTime &&
-        newDate.getTime &&
-        new Date(oldDate).getTime() !== new Date(newDate).getTime()) ||
-      (oldDate === null && newDate !== null) ||
-      (oldDate !== null && newDate === null)
-    ) {
-      diff.scheduledAt = { before: existing.scheduledAt, after: newDate };
-    }
+    diff.jobId = { before: existing.jobId, after: changes.jobId ?? null };
   }
   if (
     typeof changes.status !== "undefined" &&
@@ -200,6 +164,26 @@ export async function updateInterview(
     diff.status = {
       before: existing.status,
       after: toApplicationStatus(changes.status),
+    };
+  }
+  if (
+    typeof changes.appliedAt !== "undefined" &&
+    (existing.appliedAt?.getTime?.() ?? null) !==
+      (changes.appliedAt ? new Date(changes.appliedAt).getTime() : null)
+  ) {
+    diff.appliedAt = {
+      before: existing.appliedAt,
+      after: changes.appliedAt ? new Date(changes.appliedAt) : null,
+    };
+  }
+  if (
+    typeof changes.closedAt !== "undefined" &&
+    (existing.closedAt?.getTime?.() ?? null) !==
+      (changes.closedAt ? new Date(changes.closedAt).getTime() : null)
+  ) {
+    diff.closedAt = {
+      before: existing.closedAt,
+      after: changes.closedAt ? new Date(changes.closedAt) : null,
     };
   }
   if (
@@ -217,15 +201,16 @@ export async function updateInterview(
     prisma.applications.update({
       where: { id },
       data: {
-        title: changes.title ?? existing.title,
-        company: changes.company ?? existing.company,
-        position: changes.position ?? existing.position,
-        scheduledAt: changes.scheduledAt
-          ? new Date(changes.scheduledAt)
-          : existing.scheduledAt,
+        jobId: changes.jobId ?? existing.jobId,
         status: changes.status
           ? toApplicationStatus(changes.status)
           : existing.status,
+        appliedAt: changes.appliedAt
+          ? new Date(changes.appliedAt)
+          : existing.appliedAt,
+        closedAt: changes.closedAt
+          ? new Date(changes.closedAt)
+          : existing.closedAt,
         notes: changes.notes ?? existing.notes,
       },
     }),

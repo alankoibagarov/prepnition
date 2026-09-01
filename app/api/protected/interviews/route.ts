@@ -5,7 +5,12 @@ import {
 } from "@/lib/auth/api";
 import { RESPONSE_CODES } from "@/lib/auth/enums";
 import { getSession } from "@/lib/auth/session";
-import { createInterview, getInterviewsForUser } from "@/lib/interviews";
+import {
+  type CreateInterviewInput,
+  createInterview,
+  getInterviewsForUser,
+} from "@/lib/interviews";
+import { InterviewStatus } from "@/types/interview";
 
 export async function GET() {
   const session = await getSession();
@@ -20,23 +25,27 @@ export async function POST(request: Request) {
   const session = await getSession();
   if (!session) return unauthorizedResponse();
 
-  let body: any;
+  let body: Partial<CreateInterviewInput> = {};
   try {
-    body = await request.json();
+    const parsed = await request.json();
+    body =
+      parsed && typeof parsed === "object"
+        ? (parsed as Partial<CreateInterviewInput>)
+        : {};
   } catch {
     return badRequestResponse("Invalid JSON body");
   }
 
-  const title = (body.title || "").trim();
-  if (!title) return badRequestResponse("Title is required");
+  const jobId = (body.jobId ?? "").trim();
+  if (!jobId) return badRequestResponse("Job ID is required");
 
   const created = await createInterview(session.id, {
-    title,
-    company: body.company,
-    position: body.position,
-    scheduledAt: body.scheduledAt ?? null,
-    status: body.status ?? undefined,
-    notes: body.notes,
+    jobId,
+    status:
+      (body.status as InterviewStatus | undefined) ?? InterviewStatus.DRAFT,
+    appliedAt: body.appliedAt ?? null,
+    closedAt: body.closedAt ?? null,
+    notes: body.notes ?? null,
   });
 
   return jsonResponse({ interview: created }, RESPONSE_CODES.CREATED);

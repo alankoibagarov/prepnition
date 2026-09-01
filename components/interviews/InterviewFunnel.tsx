@@ -49,17 +49,16 @@ export default function InterviewFunnel() {
   const everSeenCounts: number[] = STAGES.map(() => 0);
 
   interviews.forEach((i) => {
-    const history = (i as any).history ?? [];
-    // Ensure chronological order by createdAt ascending
+    const history = i.history ?? [];
     const sorted = [...history].sort(
-      (a: any, b: any) =>
+      (a, b) =>
         new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
     );
     const seen: string[] = [];
     const seenSet = new Set<string>();
 
     for (const h of sorted) {
-      if (h && h.changes && h.changes.status) {
+      if (h?.changes?.status) {
         const before = h.changes.status.before as string | undefined;
         const after = h.changes.status.after as string | undefined;
         if (before) {

@@ -9,10 +9,14 @@ import {
   getInterviewById,
   getInterviewHistory,
   softDeleteInterview,
+  type UpdateInterviewInput,
   updateInterview,
 } from "@/lib/interviews";
 
-export async function GET(request: any, { params }: any) {
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
   const session = await getSession();
   if (!session) return unauthorizedResponse();
 
@@ -25,14 +29,21 @@ export async function GET(request: any, { params }: any) {
   return jsonResponse({ interview, history });
 }
 
-export async function PATCH(request: any, { params }: any) {
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
   const session = await getSession();
   if (!session) return unauthorizedResponse();
 
   const { id } = await params;
-  let body: any;
+  let body: Partial<UpdateInterviewInput> = {};
   try {
-    body = await request.json();
+    const parsed = await request.json();
+    body =
+      parsed && typeof parsed === "object"
+        ? (parsed as Partial<UpdateInterviewInput>)
+        : {};
   } catch {
     return badRequestResponse("Invalid JSON body");
   }
@@ -49,7 +60,10 @@ export async function PATCH(request: any, { params }: any) {
   return jsonResponse({ interview: updated, history });
 }
 
-export async function DELETE(request: any, { params }: any) {
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
   const session = await getSession();
   if (!session) return unauthorizedResponse();
 
