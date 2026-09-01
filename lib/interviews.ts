@@ -43,6 +43,8 @@ function mapHistory(history: ApplicationWithHistories["histories"][number]) {
 function mapApplicationToInterview(
   application: ApplicationWithHistories,
   userId: string,
+  job: Prisma.JobsGetPayload<{}> | null,
+  company: Prisma.CompaniesGetPayload<{}> | null,
 ) {
   const { profileId: _profileId, histories, ...rest } = application;
   return {
@@ -50,6 +52,8 @@ function mapApplicationToInterview(
     userId,
     status: rest.status,
     history: histories.map(mapHistory),
+    title: job?.title ?? null,
+    company: company?.name ?? null,
   };
 }
 
@@ -122,7 +126,26 @@ export async function getInterviewsForUser(
     include: { histories: { orderBy: { createdAt: "asc" } } },
   });
 
-  return applications.map((app) => mapApplicationToInterview(app, userId));
+  const jobs = await prisma.jobs.findMany({
+    where: { id: { in: applications.map((app) => app.jobId) } },
+  });
+  const jobMap = new Map(jobs.map((job) => [job.id, job]));
+
+  const companies = await prisma.companies.findMany({
+    where: { id: { in: jobs.map((job) => job.companyId) } },
+  });
+  const companyMap = new Map(companies.map((company) => [company.id, company]));
+
+  const results = applications.map((app) =>
+    mapApplicationToInterview(
+      app,
+      userId,
+      jobMap.get(app.jobId) || null,
+      companyMap.get((jobMap.get(app.jobId) || null)?.companyId || "") || null,
+    ),
+  );
+
+  return results;
 }
 
 export async function getInterviewById(id: string, userId: string) {
