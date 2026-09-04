@@ -1,4 +1,6 @@
 import { ApplicationStatus, type Prisma } from "@/generated/prisma/client";
+import type { CompaniesModel } from "@/generated/prisma/models/Companies";
+import type { JobsModel } from "@/generated/prisma/models/Jobs";
 import { prisma } from "@/lib/prisma";
 
 export type CreateInterviewInput = {
@@ -43,8 +45,8 @@ function mapHistory(history: ApplicationWithHistories["histories"][number]) {
 function mapApplicationToInterview(
   application: ApplicationWithHistories,
   userId: string,
-  job: Prisma.JobsGetPayload<{}> | null,
-  company: Prisma.CompaniesGetPayload<{}> | null,
+  job: JobsModel | null,
+  company: CompaniesModel | null,
 ) {
   const { profileId: _profileId, histories, ...rest } = application;
   return {
