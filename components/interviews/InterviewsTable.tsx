@@ -2,7 +2,7 @@
 import { Plus, RefreshCw, TableOfContents, Trash } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import type { Interview } from "@/types/interview";
 import DeleteInterviewModal from "./DeleteInterviewModal";
 import InterviewModal from "./InterviewModal";
@@ -115,18 +115,15 @@ export default function InterviewsTable() {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Interviews</CardTitle>
-      </CardHeader>
       <CardContent>
-        <div className="mb-4 flex gap-4 justify-end">
+        <div className="mb-4 flex gap-4">
           <Button
             onClick={() => openAddInterview()}
             disabled={loading}
             variant="outline"
           >
             <Plus />
-            Add Interview
+            Add Application
           </Button>
           <Button onClick={() => load()} disabled={loading} variant="outline">
             <RefreshCw />
@@ -141,8 +138,8 @@ export default function InterviewsTable() {
                 <th className="pb-2">#</th>
                 <th className="pb-2">Title</th>
                 <th className="pb-2">Company</th>
-                <th className="pb-2">Position</th>
-                <th className="pb-2">Scheduled</th>
+                <th className="pb-2">Created</th>
+                <th className="pb-2">Next Interview</th>
                 <th className="pb-2">Status</th>
                 <th className="pb-2">Actions</th>
               </tr>
@@ -153,7 +150,9 @@ export default function InterviewsTable() {
                   <td className="py-2">{index + 1}</td>
                   <td className="py-2">{i.title}</td>
                   <td className="py-2">{i.company ?? "—"}</td>
-                  <td className="py-2">{i.position ?? "—"}</td>
+                  <td className="py-2">
+                    {i.createdAt ? new Date(i.createdAt).toLocaleString() : "—"}
+                  </td>
                   <td className="py-2">
                     {i.scheduledAt
                       ? new Date(i.scheduledAt).toLocaleString()
@@ -167,7 +166,7 @@ export default function InterviewsTable() {
                         size="sm"
                         onClick={() => openInterview(i.id)}
                         variant="outline"
-                        title="View Details"
+                        title="Details"
                       >
                         <TableOfContents />
                       </Button>
@@ -190,7 +189,8 @@ export default function InterviewsTable() {
                     colSpan={6}
                     className="py-4 text-center text-sm text-muted-foreground"
                   >
-                    No interviews
+                    No Applications found. Click "Add Application" to create
+                    one.
                   </td>
                 </tr>
               )}

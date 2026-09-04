@@ -20,7 +20,7 @@ export default function Sidebar({ session }: { session: AuthUser }) {
 
   const items = [
     { href: "/app", label: "Home", icon: Home },
-    { href: "/app/interviews", label: "Interviews", icon: FileText },
+    { href: "/app/applications", label: "Applications", icon: FileText },
   ];
 
   return (
