@@ -52,8 +52,18 @@ function mapApplicationToInterview(
     userId,
     status: rest.status,
     history: histories.map(mapHistory),
-    title: job?.title ?? null,
-    company: company?.name ?? null,
+    job: {
+      id: job?.id ?? null,
+      title: job?.title ?? null,
+      description: job?.description ?? null,
+      location: job?.location ?? null,
+      salary: job?.salary ?? null,
+    },
+    company: {
+      id: company?.id ?? null,
+      name: company?.name ?? null,
+      url: company?.url ?? null,
+    },
   };
 }
 

@@ -15,6 +15,30 @@ export type InterviewHistory = {
   createdAt: string;
 };
 
+export type Application = {
+  id: string;
+  userId: string;
+  position?: string | null;
+  scheduledAt?: string | null;
+  status: InterviewStatus;
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string | null;
+  history?: InterviewHistory[];
+  company: {
+    id: string;
+    name: string;
+  } | null;
+  job: {
+    id: string;
+    title: string;
+    description?: string | null;
+    location?: string | null;
+    salary?: string | null;
+  } | null;
+};
+
 export type Interview = {
   id: string;
   userId: string;

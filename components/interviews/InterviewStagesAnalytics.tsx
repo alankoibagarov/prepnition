@@ -53,9 +53,9 @@ export default function InterviewStagesAnalytics() {
     let mounted = true;
     async function load() {
       try {
-        const res = await fetch("/api/protected/interviews");
+        const res = await fetch("/api/protected/applications");
         const data = await res.json();
-        if (mounted) setInterviews(data.interviews ?? []);
+        if (mounted) setInterviews(data.applications ?? []);
       } catch (e) {
         console.error(e);
       } finally {

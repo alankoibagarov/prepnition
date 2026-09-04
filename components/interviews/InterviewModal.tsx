@@ -37,7 +37,6 @@ export default function InterviewModal({
 
   const [modalForm, setModalForm] = useState({
     title: interview?.title ?? "",
-    position: interview?.position ?? "",
     company: interview?.company ?? "",
     notes: interview?.notes ?? "",
     status: interview?.status ?? InterviewStatus.DRAFT,
@@ -64,7 +63,6 @@ export default function InterviewModal({
   function onReset() {
     setModalForm({
       title: interview?.title ?? "",
-      position: interview?.position ?? "",
       company: interview?.company ?? "",
       notes: interview?.notes ?? "",
       status: interview?.status ?? InterviewStatus.DRAFT,
@@ -74,7 +72,6 @@ export default function InterviewModal({
   useEffect(() => {
     setModalForm({
       title: interview?.title ?? "",
-      position: interview?.position ?? "",
       company: interview?.company ?? "",
       notes: interview?.notes ?? "",
       status: interview?.status ?? InterviewStatus.DRAFT,
@@ -107,18 +104,6 @@ export default function InterviewModal({
                           setModalForm({
                             ...modalForm,
                             title: e.currentTarget.value,
-                          });
-                        }}
-                      />
-                    </Field>
-                    <Field>
-                      <FieldLabel>Position:</FieldLabel>
-                      <Input
-                        value={modalForm.position}
-                        onChange={(e) => {
-                          setModalForm({
-                            ...modalForm,
-                            position: e.currentTarget.value,
                           });
                         }}
                       />
@@ -288,44 +273,47 @@ export default function InterviewModal({
                 </FieldGroup>
               </form>
             </div>
-            <Separator orientation="vertical" className="hidden md:block" />
+
             {interview && (
-              <div className="space-y-2 flex-1 flex flex-col">
-                <strong className="">History:</strong>
-                <div className="max-h-[70dvh] overflow-auto">
-                  {interview?.history && interview.history.length > 0 ? (
-                    interview.history.map((h) => (
-                      <div key={h.id} className="mb-2 p-2 border rounded">
-                        <div className="flex justify-between text-sm">
-                          <div className="font-medium">{h.action}</div>
-                          <div className="text-muted-foreground">
-                            {formatDate(h.createdAt)}
+              <>
+                <Separator orientation="vertical" className="hidden md:block" />
+                <div className="space-y-2 flex-1 flex flex-col">
+                  <strong className="">History:</strong>
+                  <div className="max-h-[70dvh] overflow-auto">
+                    {interview?.history && interview.history.length > 0 ? (
+                      interview.history.map((h) => (
+                        <div key={h.id} className="mb-2 p-2 border rounded">
+                          <div className="flex justify-between text-sm">
+                            <div className="font-medium">{h.action}</div>
+                            <div className="text-muted-foreground">
+                              {formatDate(h.createdAt)}
+                            </div>
+                          </div>
+                          <div className="mt-1 text-xs">
+                            {Object.entries(h.changes).map(([field, val]) => {
+                              const change = val as
+                                | { before?: unknown; after?: unknown }
+                                | undefined;
+
+                              return (
+                                <div key={field}>
+                                  <strong>{capitalize(field)}:</strong>{" "}
+                                  {String(change?.before ?? "—")} →{" "}
+                                  {String(change?.after ?? "—")}
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
-                        <div className="mt-1 text-xs">
-                          {Object.entries(h.changes).map(([field, val]) => {
-                            const change = val as
-                              | { before?: unknown; after?: unknown }
-                              | undefined;
-
-                            return (
-                              <div key={field}>
-                                <strong>{capitalize(field)}:</strong>{" "}
-                                {String(change?.before ?? "—")} →{" "}
-                                {String(change?.after ?? "—")}
-                              </div>
-                            );
-                          })}
-                        </div>
+                      ))
+                    ) : (
+                      <div className="text-sm text-muted-foreground">
+                        No history
                       </div>
-                    ))
-                  ) : (
-                    <div className="text-sm text-muted-foreground">
-                      No history
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
+              </>
             )}
           </div>
           <Separator className="my-4" />

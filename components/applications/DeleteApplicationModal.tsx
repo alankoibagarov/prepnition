@@ -8,16 +8,16 @@ import {
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-export default function DeleteInterviewModal({
+export default function DeleteApplicationModal({
   open,
   onClose,
   onDelete,
-  interviewId,
+  applicationId,
 }: {
   open: boolean;
   onClose: () => void;
   onDelete: (id: string) => void;
-  interviewId: string | null;
+  applicationId: string | null;
 }) {
   if (!open) return null;
 
@@ -31,16 +31,16 @@ export default function DeleteInterviewModal({
       />
       <Card className={cn("z-50 max-w-2xl w-full mx-4")}>
         <CardHeader>
-          <CardTitle>Delete Interview</CardTitle>
+          <CardTitle>Delete Application</CardTitle>
           <CardDescription>
-            Are you sure you want to delete this interview? This action cannot
+            Are you sure you want to delete this application? This action cannot
             be undone.
           </CardDescription>
         </CardHeader>
         <div className="flex justify-end gap-2 p-4">
           <Button
             variant="destructive"
-            onClick={() => interviewId && onDelete(interviewId)}
+            onClick={() => applicationId && onDelete(applicationId)}
           >
             Delete
           </Button>

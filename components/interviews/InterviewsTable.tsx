@@ -1,17 +1,15 @@
 "use client";
-import { Plus, RefreshCw, TableOfContents, Trash } from "lucide-react";
+import { RefreshCw, TableOfContents, Trash } from "lucide-react";
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import type { Interview } from "@/types/interview";
-import DeleteInterviewModal from "./DeleteInterviewModal";
-import InterviewModal from "./InterviewModal";
+import type { Application } from "@/types/interview";
+import DeleteInterviewModal from "../applications/DeleteApplicationModal";
 
-export default function InterviewsTable() {
-  const [interviews, setInterviews] = useState<Interview[]>([]);
+export default function ApplicationsTable() {
+  const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selected, setSelected] = useState<Interview | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedForDelete, setSelectedForDelete] = useState<string | null>(
     null,
@@ -20,10 +18,10 @@ export default function InterviewsTable() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/protected/interviews");
+      const res = await fetch("/api/protected/applications");
       if (!res.ok) throw new Error("Failed to load");
       const data = await res.json();
-      setInterviews(data.interviews ?? []);
+      setApplications(data.applications ?? []);
     } catch (e) {
       console.error(e);
     } finally {
@@ -35,81 +33,23 @@ export default function InterviewsTable() {
     load();
   }, [load]);
 
-  async function openInterview(id: string) {
-    try {
-      const res = await fetch(`/api/protected/interviews/${id}`);
-      if (!res.ok) throw new Error("Not found");
-      const data = await res.json();
-      setSelected(
-        data.interview
-          ? { ...data.interview, history: data.history ?? [] }
-          : null,
-      );
-      setModalOpen(true);
-    } catch (e) {
-      console.error(e);
-      // fallback: close modal if error
-      setSelected(null);
-      setModalOpen(false);
-    }
-  }
-
   async function openDeleteModal(id: string) {
     setSelectedForDelete(id);
     setDeleteModalOpen(true);
   }
 
-  async function openAddInterview() {
-    try {
-      setSelected(null);
-      setModalOpen(true);
-    } catch (e) {
-      console.error(e);
-      // fallback: close modal if error
-      setSelected(null);
-      setModalOpen(false);
-    }
-  }
-
   async function deleteInterview(id: string) {
     try {
-      const res = await fetch(`/api/protected/interviews/${id}`, {
+      const res = await fetch(`/api/protected/applications/${id}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Not found");
-      setSelected(null);
       setDeleteModalOpen(false);
       load();
     } catch (e) {
       console.error(e);
       // fallback: close modal if error
-      setSelected(null);
       setDeleteModalOpen(false);
-    }
-  }
-
-  async function updateInterview(id: string, updates: Partial<Interview>) {
-    try {
-      const res = await fetch(`/api/protected/interviews/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updates),
-      });
-      if (!res.ok) throw new Error("Not found");
-      const data = await res.json();
-      setSelected(
-        data.interview
-          ? { ...data.interview, history: data.history ?? [] }
-          : null,
-      );
-      load();
-    } catch (e) {
-      console.error(e);
-      // fallback: close modal if error
-      setSelected(null);
-      setModalOpen(false);
     }
   }
 
@@ -117,14 +57,6 @@ export default function InterviewsTable() {
     <Card>
       <CardContent>
         <div className="mb-4 flex gap-4">
-          <Button
-            onClick={() => openAddInterview()}
-            disabled={loading}
-            variant="outline"
-          >
-            <Plus />
-            Add Application
-          </Button>
           <Button onClick={() => load()} disabled={loading} variant="outline">
             <RefreshCw />
             Refresh
@@ -145,45 +77,50 @@ export default function InterviewsTable() {
               </tr>
             </thead>
             <tbody>
-              {interviews.map((i, index) => (
-                <tr key={i.id} className="border-t">
+              {applications.map((application, index) => (
+                <tr key={application.id} className="border-t">
                   <td className="py-2">{index + 1}</td>
-                  <td className="py-2">{i.title}</td>
-                  <td className="py-2">{i.company ?? "—"}</td>
+                  <td className="py-2">{application.job?.title ?? "—"}</td>
+                  <td className="py-2">{application.company?.name ?? "—"}</td>
                   <td className="py-2">
-                    {i.createdAt ? new Date(i.createdAt).toLocaleString() : "—"}
-                  </td>
-                  <td className="py-2">
-                    {i.scheduledAt
-                      ? new Date(i.scheduledAt).toLocaleString()
+                    {application.createdAt
+                      ? new Date(application.createdAt).toLocaleString()
                       : "—"}
                   </td>
-                  <td className="py-2">{i.status}</td>
+                  <td className="py-2">
+                    {application.scheduledAt
+                      ? new Date(application.scheduledAt).toLocaleString()
+                      : "—"}
+                  </td>
+                  <td className="py-2">{application.status}</td>
                   <td className="py-2">
                     <div className="flex gap-2">
-                      <Button
-                        className="cursor-pointer"
-                        size="sm"
-                        onClick={() => openInterview(i.id)}
-                        variant="outline"
+                      <Link
+                        className={buttonVariants({
+                          size: "sm",
+                          variant: "outline",
+                        })}
+                        href={`/app/applications/${application.id}`}
                         title="Details"
                       >
                         <TableOfContents />
-                      </Button>
+                        Details
+                      </Link>
                       <Button
                         className="cursor-pointer"
                         size="sm"
-                        onClick={() => openDeleteModal(i.id)}
+                        onClick={() => openDeleteModal(application.id)}
                         variant="outline"
                         title="Delete"
                       >
                         <Trash />
+                        Delete
                       </Button>
                     </div>
                   </td>
                 </tr>
               ))}
-              {interviews.length === 0 && !loading && (
+              {applications.length === 0 && !loading && (
                 <tr>
                   <td
                     colSpan={6}
@@ -199,19 +136,10 @@ export default function InterviewsTable() {
         </div>
       </CardContent>
 
-      <InterviewModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSubmit={(modalForm) => {
-          updateInterview(selected?.id ?? "", modalForm);
-        }}
-        interview={selected}
-      />
-
       <DeleteInterviewModal
         open={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
-        interviewId={selectedForDelete}
+        applicationId={selectedForDelete}
         onDelete={deleteInterview}
       />
     </Card>
