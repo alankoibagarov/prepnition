@@ -1,5 +1,4 @@
 "use client";
-
 import { Pencil, Plus, Save, Trash2, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -253,6 +252,37 @@ export default function ApplicationDetails({ id }: { id: string }) {
     );
     if (response.ok) await load();
     else setError("Unable to delete interview");
+  }
+
+  function parseHistoryChanges(changes: Record<string, unknown>) {
+    if (!changes) return "No changes recorded";
+    return Object.entries(changes)
+      .map(([key, value]) => {
+        if (
+          typeof value === "object" &&
+          value !== null &&
+          "before" in value &&
+          "after" in value
+        ) {
+          const before = value.before ?? "null";
+          const after = value.after ?? "null";
+
+          if (key === "jobId") {
+            const beforeJob = jobs.find((job) => job.id === before);
+            const afterJob = jobs.find((job) => job.id === after);
+            return `${key}: ${beforeJob?.title ?? before} → ${afterJob?.title ?? after}`;
+          }
+          return `${key}: ${before} → ${after}`;
+        }
+
+        if (key === "jobId") {
+          const job = jobs.find((job) => job.id === value);
+
+          return `${key}: ${job?.title}`;
+        }
+        return `${key}: ${value}`;
+      })
+      .join("\n");
   }
 
   if (loading)
@@ -653,7 +683,7 @@ export default function ApplicationDetails({ id }: { id: string }) {
                     </time>
                   </div>
                   <pre className="mt-1 overflow-auto whitespace-pre-wrap text-xs text-muted-foreground">
-                    {JSON.stringify(history.changes, null, 2)}
+                    {parseHistoryChanges(history.changes)}
                   </pre>
                 </div>
               ))}
