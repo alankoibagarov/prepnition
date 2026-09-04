@@ -7,6 +7,15 @@ import {
 import { prisma } from "@/lib/prisma";
 
 export type ApplicationDetailUpdate = {
+  jobId?: string;
+  newJob?: {
+    title: string;
+    description: string;
+    location: string;
+    salary: string;
+    companyName: string;
+    companyUrl: string;
+  };
   status?: ApplicationStatus;
   appliedAt?: string | null;
   closedAt?: string | null;
@@ -97,6 +106,15 @@ export async function updateApplicationDetail(
   const jobData: Prisma.JobsUpdateInput = {};
   const companyData: Prisma.CompaniesUpdateInput = {};
 
+  if (changes.jobId !== undefined && changes.jobId !== existing.jobId) {
+    const selectedJob = await prisma.jobs.findUnique({
+      where: { id: changes.jobId },
+    });
+    if (!selectedJob) throw new Error("Selected job was not found");
+    applicationData.job = { connect: { id: changes.jobId } };
+    diff.jobId = { before: existing.jobId, after: changes.jobId };
+  }
+
   if (changes.status !== undefined && changes.status !== existing.status) {
     applicationData.status = changes.status;
     diff.status = { before: existing.status, after: changes.status };
@@ -115,6 +133,7 @@ export async function updateApplicationDetail(
     }
   }
   for (const field of ["title", "description", "location", "salary"] as const) {
+    if (changes.newJob) continue;
     const value = changes.job?.[field];
     if (value !== undefined && value !== existing.job[field]) {
       const nextValue = nonEmpty(value, `job.${field}`);
@@ -123,6 +142,7 @@ export async function updateApplicationDetail(
     }
   }
   for (const field of ["name", "url"] as const) {
+    if (changes.newJob) continue;
     const value = changes.company?.[field];
     if (value !== undefined && value !== existing.job.company[field]) {
       const nextValue = nonEmpty(value, `company.${field}`);
@@ -133,9 +153,32 @@ export async function updateApplicationDetail(
       };
     }
   }
+  if (changes.newJob) {
+    diff.newJob = { before: null, after: "created" };
+  }
   if (!Object.keys(diff).length) return serializeApplication(existing);
 
   return prisma.$transaction(async (tx) => {
+    if (changes.newJob) {
+      const newJob = await tx.jobs.create({
+        data: {
+          title: nonEmpty(changes.newJob.title, "job.title"),
+          description: nonEmpty(changes.newJob.description, "job.description"),
+          location: nonEmpty(changes.newJob.location, "job.location"),
+          salary: nonEmpty(changes.newJob.salary, "job.salary"),
+          company: {
+            create: {
+              name: nonEmpty(changes.newJob.companyName, "company.name"),
+              url: nonEmpty(changes.newJob.companyUrl, "company.url"),
+            },
+          },
+        },
+        include: { company: true },
+      });
+      applicationData.job = { connect: { id: newJob.id } };
+      diff.jobId = { before: existing.jobId, after: newJob.id };
+      diff.job = { before: existing.job, after: newJob };
+    }
     if (Object.keys(companyData).length)
       await tx.companies.update({
         where: { id: existing.job.companyId },

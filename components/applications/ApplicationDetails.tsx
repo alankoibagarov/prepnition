@@ -49,6 +49,14 @@ type Application = {
     createdAt: string;
   }[];
 };
+type Job = {
+  id: string;
+  title: string;
+  description: string;
+  location: string;
+  salary: string;
+  company: { id: string; name: string; url: string };
+};
 
 const statuses = ["DRAFT", "ACTIVE", "REJECTED", "WITHDRAWN", "OFFER"];
 const interviewTypes = ["TECHNICAL", "MANAGERIAL", "HR", "BIAS", "OTHER"];
@@ -79,6 +87,10 @@ export default function ApplicationDetails({ id }: { id: string }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [jobSearch, setJobSearch] = useState("");
+  const [jobMode, setJobMode] = useState<"existing" | "new">("existing");
+  const [selectedJobId, setSelectedJobId] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -106,6 +118,7 @@ export default function ApplicationDetails({ id }: { id: string }) {
         companyName: item.company.name,
         companyUrl: item.company.url,
       });
+      setSelectedJobId(item.job.id);
     } catch (cause) {
       setError(
         cause instanceof Error ? cause.message : "Unable to load application",
@@ -117,6 +130,27 @@ export default function ApplicationDetails({ id }: { id: string }) {
   useEffect(() => {
     load();
   }, [load]);
+
+  useEffect(() => {
+    if (jobMode !== "existing") return;
+    const controller = new AbortController();
+    fetch(`/api/protected/jobs?search=${encodeURIComponent(jobSearch)}`, {
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Unable to load jobs");
+        const data = await response.json();
+        setJobs(data.jobs ?? []);
+      })
+      .catch((cause: unknown) => {
+        if (cause instanceof DOMException && cause.name === "AbortError")
+          return;
+        setError(
+          cause instanceof Error ? cause.message : "Unable to load jobs",
+        );
+      });
+    return () => controller.abort();
+  }, [jobMode, jobSearch]);
 
   function setValue(name: string, value: string) {
     setForm((current) => ({ ...current, [name]: value }));
@@ -135,13 +169,18 @@ export default function ApplicationDetails({ id }: { id: string }) {
           : null,
         closedAt: form.closedAt ? new Date(form.closedAt).toISOString() : null,
         notes: form.notes || null,
-        job: {
-          title: form.title,
-          description: form.description,
-          location: form.location,
-          salary: form.salary,
-        },
-        company: { name: form.companyName, url: form.companyUrl },
+        ...(jobMode === "existing"
+          ? { jobId: selectedJobId }
+          : {
+              newJob: {
+                title: form.title,
+                description: form.description,
+                location: form.location,
+                salary: form.salary,
+                companyName: form.companyName,
+                companyUrl: form.companyUrl,
+              },
+            }),
       }),
     });
     if (!response.ok) {
@@ -297,62 +336,129 @@ export default function ApplicationDetails({ id }: { id: string }) {
         </Card>
         <Card>
           <CardContent className="space-y-5">
-            <h2 className="text-lg font-medium">Job and company</h2>
-            <FieldSet>
-              <Field>
-                <FieldLabel>Job title</FieldLabel>
-                <Input
-                  value={form.title}
-                  onChange={(event) => setValue("title", event.target.value)}
-                />
-              </Field>
-              <Field>
-                <FieldLabel>Description</FieldLabel>
-                <Textarea
-                  value={form.description}
-                  onChange={(event) =>
-                    setValue("description", event.target.value)
-                  }
-                />
-              </Field>
-              <div className="grid gap-4 sm:grid-cols-2">
+            <div className="flex items-center justify-between gap-4">
+              <h2 className="text-lg font-medium">Job</h2>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={jobMode === "existing" ? "default" : "outline"}
+                  onClick={() => setJobMode("existing")}
+                >
+                  Existing job
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={jobMode === "new" ? "default" : "outline"}
+                  onClick={() => setJobMode("new")}
+                >
+                  New job
+                </Button>
+              </div>
+            </div>
+            {jobMode === "existing" ? (
+              <FieldSet>
                 <Field>
-                  <FieldLabel>Location</FieldLabel>
+                  <FieldLabel htmlFor="job-search">Search jobs</FieldLabel>
                   <Input
-                    value={form.location}
+                    id="job-search"
+                    placeholder="Search title, company, or salary"
+                    value={jobSearch}
+                    onChange={(event) => setJobSearch(event.target.value)}
+                  />
+                </Field>
+                <div className="max-h-64 space-y-2 overflow-y-auto">
+                  {jobs.map((job) => (
+                    <button
+                      className={`w-full rounded-lg border p-3 text-left transition-colors ${selectedJobId === job.id ? "border-primary bg-primary/10" : "hover:bg-muted"}`}
+                      key={job.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedJobId(job.id);
+                        setForm((current) => ({
+                          ...current,
+                          title: job.title,
+                          description: job.description,
+                          location: job.location,
+                          salary: job.salary,
+                          companyName: job.company.name,
+                          companyUrl: job.company.url,
+                        }));
+                      }}
+                    >
+                      <span className="block font-medium">{job.title}</span>
+                      <span className="block text-sm text-muted-foreground">
+                        {job.company.name} · {job.salary}
+                      </span>
+                    </button>
+                  ))}
+                  {jobs.length === 0 && (
+                    <p className="text-sm text-muted-foreground">
+                      No jobs found.
+                    </p>
+                  )}
+                </div>
+              </FieldSet>
+            ) : (
+              <FieldSet>
+                <Field>
+                  <FieldLabel>Job title</FieldLabel>
+                  <Input
+                    value={form.title}
+                    onChange={(event) => setValue("title", event.target.value)}
+                  />
+                </Field>
+                <Field>
+                  <FieldLabel>Description</FieldLabel>
+                  <Textarea
+                    value={form.description}
                     onChange={(event) =>
-                      setValue("location", event.target.value)
+                      setValue("description", event.target.value)
+                    }
+                  />
+                </Field>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field>
+                    <FieldLabel>Location</FieldLabel>
+                    <Input
+                      value={form.location}
+                      onChange={(event) =>
+                        setValue("location", event.target.value)
+                      }
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel>Salary</FieldLabel>
+                    <Input
+                      value={form.salary}
+                      onChange={(event) =>
+                        setValue("salary", event.target.value)
+                      }
+                    />
+                  </Field>
+                </div>
+                <Field>
+                  <FieldLabel>Company name</FieldLabel>
+                  <Input
+                    value={form.companyName}
+                    onChange={(event) =>
+                      setValue("companyName", event.target.value)
                     }
                   />
                 </Field>
                 <Field>
-                  <FieldLabel>Salary</FieldLabel>
+                  <FieldLabel>Company URL</FieldLabel>
                   <Input
-                    value={form.salary}
-                    onChange={(event) => setValue("salary", event.target.value)}
+                    type="url"
+                    value={form.companyUrl}
+                    onChange={(event) =>
+                      setValue("companyUrl", event.target.value)
+                    }
                   />
                 </Field>
-              </div>
-              <Field>
-                <FieldLabel>Company name</FieldLabel>
-                <Input
-                  value={form.companyName}
-                  onChange={(event) =>
-                    setValue("companyName", event.target.value)
-                  }
-                />
-              </Field>
-              <Field>
-                <FieldLabel>Company URL</FieldLabel>
-                <Input
-                  type="url"
-                  value={form.companyUrl}
-                  onChange={(event) =>
-                    setValue("companyUrl", event.target.value)
-                  }
-                />
-              </Field>
-            </FieldSet>
+              </FieldSet>
+            )}
           </CardContent>
         </Card>
       </form>
