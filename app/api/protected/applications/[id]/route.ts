@@ -1,5 +1,6 @@
 import {
   type ApplicationDetailUpdate,
+  deleteApplication,
   getApplicationDetail,
   updateApplicationDetail,
 } from "@/lib/applications";
@@ -52,4 +53,22 @@ export async function PATCH(
       error instanceof Error ? error.message : "Invalid application data",
     );
   }
+}
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const session = await getSession();
+  if (!session) return unauthorizedResponse();
+
+  const { id } = await params;
+  const deleted = await deleteApplication(id, session.id);
+  if (!deleted)
+    return jsonResponse(
+      { error: "Not found or not allowed" },
+      RESPONSE_CODES.NOT_FOUND,
+    );
+
+  return jsonResponse({ success: true });
 }

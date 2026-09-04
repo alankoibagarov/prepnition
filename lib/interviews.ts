@@ -1,5 +1,6 @@
 import { ApplicationStatus, type Prisma } from "@/generated/prisma/client";
 import type { CompaniesModel } from "@/generated/prisma/models/Companies";
+import type { InterviewsModel } from "@/generated/prisma/models/Interviews";
 import type { JobsModel } from "@/generated/prisma/models/Jobs";
 import { prisma } from "@/lib/prisma";
 
@@ -47,6 +48,7 @@ function mapApplicationToInterview(
   userId: string,
   job: JobsModel | null,
   company: CompaniesModel | null,
+  interviews: InterviewsModel[] | null,
 ) {
   const { profileId: _profileId, histories, ...rest } = application;
   return {
@@ -66,6 +68,15 @@ function mapApplicationToInterview(
       name: company?.name ?? null,
       url: company?.url ?? null,
     },
+    interviews: interviews?.map((interview) => ({
+      id: interview.id,
+      title: interview.title,
+      scheduledAt: interview.scheduledAt ?? null,
+      status: interview.status,
+      notes: interview.notes ?? null,
+      createdAt: interview.createdAt,
+      updatedAt: interview.updatedAt,
+    })),
   };
 }
 
@@ -148,12 +159,18 @@ export async function getInterviewsForUser(
   });
   const companyMap = new Map(companies.map((company) => [company.id, company]));
 
+  const interviews = await prisma.interviews.findMany({
+    where: { applicationId: { in: applications.map((app) => app.id) } },
+  });
+
   const results = applications.map((app) =>
     mapApplicationToInterview(
       app,
       userId,
       jobMap.get(app.jobId) || null,
       companyMap.get((jobMap.get(app.jobId) || null)?.companyId || "") || null,
+      interviews.filter((interview) => interview.applicationId === app.id) ||
+        null,
     ),
   );
 

@@ -1,5 +1,5 @@
 "use client";
-import { RefreshCw, TableOfContents, Trash } from "lucide-react";
+import { Plus, RefreshCw, TableOfContents, Trash } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -57,6 +57,10 @@ export default function ApplicationsTable() {
     <Card>
       <CardContent>
         <div className="mb-4 flex gap-4">
+          <Button disabled={loading} variant="outline">
+            <Plus />
+            Add Application
+          </Button>
           <Button onClick={() => load()} disabled={loading} variant="outline">
             <RefreshCw />
             Refresh
@@ -88,8 +92,10 @@ export default function ApplicationsTable() {
                       : "—"}
                   </td>
                   <td className="py-2">
-                    {application.scheduledAt
-                      ? new Date(application.scheduledAt).toLocaleString()
+                    {application.interviews
+                      ? new Date(
+                          application.interviews?.[0]?.scheduledAt || "",
+                        ).toLocaleString()
                       : "—"}
                   </td>
                   <td className="py-2">{application.status}</td>

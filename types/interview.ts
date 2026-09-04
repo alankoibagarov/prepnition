@@ -37,6 +37,7 @@ export type Application = {
     location?: string | null;
     salary?: string | null;
   } | null;
+  interviews: Interview[] | null;
 };
 
 export type Interview = {
@@ -45,7 +46,7 @@ export type Interview = {
   title: string;
   company?: string | null;
   position?: string | null;
-  scheduledAt?: string | null;
+  scheduledAt?: string | Date | null;
   status: InterviewStatus;
   notes?: string | null;
   createdAt: string;

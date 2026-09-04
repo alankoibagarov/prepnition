@@ -59,21 +59,3 @@ export async function PATCH(
 
   return jsonResponse({ interview: updated, history });
 }
-
-export async function DELETE(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  const session = await getSession();
-  if (!session) return unauthorizedResponse();
-
-  const { id } = await params;
-  const deleted = await softDeleteInterview(id, session.id);
-  if (!deleted)
-    return jsonResponse(
-      { error: "Not found or not allowed" },
-      RESPONSE_CODES.NOT_FOUND,
-    );
-
-  return jsonResponse({ success: true });
-}

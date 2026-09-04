@@ -160,6 +160,18 @@ export async function updateApplicationDetail(
   });
 }
 
+export async function deleteApplication(id: string, userId: string) {
+  const existing = await ownedApplication(id, userId);
+  if (!existing) return null;
+  await prisma.$transaction([
+    prisma.applications.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    }),
+  ]);
+  return { success: true };
+}
+
 export async function createApplicationInterview(
   id: string,
   userId: string,

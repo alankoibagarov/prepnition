@@ -43,7 +43,10 @@ export default function Sidebar({ session }: { session: AuthUser }) {
           <nav aria-label="Main" className="flex flex-col gap-1 px-3">
             {items.map((it) => {
               const Icon = it.icon;
-              const active = pathname === it.href;
+              const active =
+                pathname === "/app"
+                  ? pathname === it.href
+                  : pathname.includes(it.href) && it.href !== "/app";
               return (
                 <Link
                   key={it.href}
