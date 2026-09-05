@@ -36,7 +36,6 @@ export type InterviewInput = {
   type: InterviewType;
   title: string;
   scheduledAt?: string | null;
-  durationMinutes?: number | null;
   status?: InterviewStatus;
   notes?: string | null;
 };
@@ -217,6 +216,25 @@ export async function updateApplicationDetail(
 
   if (changes.status !== undefined && changes.status !== existing.status) {
     applicationData.status = changes.status;
+
+    if (
+      changes.status === ApplicationStatus.ACTIVE &&
+      existing.status !== ApplicationStatus.ACTIVE
+    ) {
+      changes.appliedAt = changes.appliedAt ?? new Date().toISOString();
+    }
+
+    if (
+      (
+        [
+          ApplicationStatus.OFFER,
+          ApplicationStatus.REJECTED,
+          ApplicationStatus.WITHDRAWN,
+        ] as ApplicationStatus[]
+      ).includes(changes.status)
+    ) {
+      changes.closedAt = changes.closedAt ?? new Date().toISOString();
+    }
     diff.status = { before: existing.status, after: changes.status };
   }
   for (const field of ["appliedAt", "closedAt", "notes"] as const) {
@@ -523,7 +541,6 @@ export async function createApplicationInterview(
         title,
         status: input.status ?? InterviewStatus.SCHEDULED,
         scheduledAt: dateValue(input.scheduledAt),
-        durationMinutes: input.durationMinutes ?? null,
         notes: input.notes ?? null,
       },
     });
@@ -551,13 +568,7 @@ export async function updateApplicationInterview(
   if (!interview) return null;
   const data: Prisma.InterviewsUpdateInput = {};
   const changes: Record<string, { before: unknown; after: unknown }> = {};
-  for (const field of [
-    "type",
-    "title",
-    "status",
-    "durationMinutes",
-    "notes",
-  ] as const) {
+  for (const field of ["type", "title", "status", "notes"] as const) {
     if (input[field] !== undefined && input[field] !== interview[field]) {
       data[field] =
         field === "title"

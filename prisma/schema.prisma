@@ -104,7 +104,6 @@ model Interviews {
   type InterviewType
   title String
   scheduledAt DateTime?
-  durationMinutes Int?
   status InterviewStatus @default(SCHEDULED)
   notes String?
   createdAt DateTime @default(now())

@@ -18,7 +18,6 @@ type Interview = {
   type: string;
   title: string;
   scheduledAt: string | null;
-  durationMinutes: number | null;
   status: string;
   notes: string | null;
   createdAt: string;
@@ -27,8 +26,6 @@ type Interview = {
 type Application = {
   id: string;
   status: string;
-  appliedAt: string | null;
-  closedAt: string | null;
   notes: string | null;
   createdAt: string;
   updatedAt: string;
@@ -107,8 +104,6 @@ export default function ApplicationDetails({ id }: { id: string }) {
       const item = data.application as Application;
       setForm({
         status: item.status,
-        appliedAt: dateInput(item.appliedAt),
-        closedAt: dateInput(item.closedAt),
         notes: item.notes ?? "",
         title: item.job.title,
         description: item.job.description,
@@ -163,10 +158,6 @@ export default function ApplicationDetails({ id }: { id: string }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         status: form.status,
-        appliedAt: form.appliedAt
-          ? new Date(form.appliedAt).toISOString()
-          : null,
-        closedAt: form.closedAt ? new Date(form.closedAt).toISOString() : null,
         notes: form.notes || null,
         ...(jobMode === "existing"
           ? { jobId: selectedJobId }
@@ -196,7 +187,6 @@ export default function ApplicationDetails({ id }: { id: string }) {
             type: interview.type,
             title: interview.title,
             scheduledAt: dateInput(interview.scheduledAt),
-            durationMinutes: interview.durationMinutes?.toString() ?? "",
             status: interview.status,
             notes: interview.notes ?? "",
           }
@@ -204,7 +194,6 @@ export default function ApplicationDetails({ id }: { id: string }) {
             type: "TECHNICAL",
             title: "",
             scheduledAt: "",
-            durationMinutes: "",
             status: "SCHEDULED",
             notes: "",
           },
@@ -219,9 +208,6 @@ export default function ApplicationDetails({ id }: { id: string }) {
       title: interviewForm.title,
       scheduledAt: interviewForm.scheduledAt
         ? new Date(interviewForm.scheduledAt).toISOString()
-        : null,
-      durationMinutes: interviewForm.durationMinutes
-        ? Number(interviewForm.durationMinutes)
         : null,
       status: interviewForm.status,
       notes: interviewForm.notes || null,
@@ -328,31 +314,10 @@ export default function ApplicationDetails({ id }: { id: string }) {
                   </SelectContent>
                 </Select>
               </Field>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field>
-                  <FieldLabel>Applied</FieldLabel>
-                  <Input
-                    type="datetime-local"
-                    value={form.appliedAt}
-                    onChange={(event) =>
-                      setValue("appliedAt", event.target.value)
-                    }
-                  />
-                </Field>
-                <Field>
-                  <FieldLabel>Closed</FieldLabel>
-                  <Input
-                    type="datetime-local"
-                    value={form.closedAt}
-                    onChange={(event) =>
-                      setValue("closedAt", event.target.value)
-                    }
-                  />
-                </Field>
-              </div>
               <Field>
                 <FieldLabel>Notes</FieldLabel>
                 <Textarea
+                  className="h-48"
                   value={form.notes}
                   onChange={(event) => setValue("notes", event.target.value)}
                 />
@@ -573,20 +538,6 @@ export default function ApplicationDetails({ id }: { id: string }) {
                 />
               </Field>
               <Field>
-                <FieldLabel>Duration (minutes)</FieldLabel>
-                <Input
-                  type="number"
-                  min="0"
-                  value={interviewForm.durationMinutes}
-                  onChange={(event) =>
-                    setInterviewForm({
-                      ...interviewForm,
-                      durationMinutes: event.target.value,
-                    })
-                  }
-                />
-              </Field>
-              <Field>
                 <FieldLabel>Notes</FieldLabel>
                 <Textarea
                   value={interviewForm.notes}
@@ -630,9 +581,6 @@ export default function ApplicationDetails({ id }: { id: string }) {
                     <p className="text-sm text-muted-foreground">
                       {label(interview.type)} · {label(interview.status)} ·{" "}
                       {displayDate(interview.scheduledAt)}
-                      {interview.durationMinutes
-                        ? ` · ${interview.durationMinutes} min`
-                        : ""}
                     </p>
                     {interview.notes && (
                       <p className="mt-1 text-sm">{interview.notes}</p>

@@ -209,7 +209,6 @@ async function seed() {
       type: InterviewType;
       title: string;
       scheduledAt: Date | null;
-      durationMinutes: number | null;
       status: InterviewStatus;
       notes: string;
     }[];
@@ -226,7 +225,6 @@ async function seed() {
           type: InterviewType.HR,
           title: "Recruiter screen",
           scheduledAt: new Date(now - 18 * day),
-          durationMinutes: 30,
           status: InterviewStatus.PASSED,
           notes: "Compensation aligned.",
         },
@@ -234,7 +232,6 @@ async function seed() {
           type: InterviewType.TECHNICAL,
           title: "Frontend Engineer Interview",
           scheduledAt: new Date(now - 14 * day),
-          durationMinutes: 60,
           status: InterviewStatus.PASSED,
           notes: "Strong on accessibility.",
         },
@@ -242,7 +239,6 @@ async function seed() {
           type: InterviewType.MANAGERIAL,
           title: "Hiring manager",
           scheduledAt: new Date(now + 3 * day),
-          durationMinutes: 45,
           status: InterviewStatus.SCHEDULED,
           notes: "Team fit conversation.",
         },
@@ -260,7 +256,6 @@ async function seed() {
           type: InterviewType.TECHNICAL,
           title: "Backend Coding Challenge",
           scheduledAt: new Date(now + 7 * day),
-          durationMinutes: 90,
           status: InterviewStatus.SCHEDULED,
           notes: "Take-home plus live review.",
         },
@@ -278,7 +273,6 @@ async function seed() {
           type: InterviewType.HR,
           title: "Product Engineer Screen",
           scheduledAt: new Date(now + 2 * day),
-          durationMinutes: 30,
           status: InterviewStatus.SCHEDULED,
           notes: "Informational screen.",
         },
@@ -296,7 +290,6 @@ async function seed() {
           type: InterviewType.TECHNICAL,
           title: "Data Engineer Interview",
           scheduledAt: new Date(now + 30 * day),
-          durationMinutes: 60,
           status: InterviewStatus.SCHEDULED,
           notes: "Warehouse design.",
         },
@@ -314,7 +307,6 @@ async function seed() {
           type: InterviewType.TECHNICAL,
           title: "Mobile Engineer Pairing",
           scheduledAt: new Date(now - 3 * day),
-          durationMinutes: 75,
           status: InterviewStatus.FAILED,
           notes: "Missed a few platform APIs.",
         },
@@ -332,7 +324,6 @@ async function seed() {
           type: InterviewType.TECHNICAL,
           title: "DevOps Interview",
           scheduledAt: new Date(now + 3 * day),
-          durationMinutes: 60,
           status: InterviewStatus.SCHEDULED,
           notes: "Cluster troubleshooting.",
         },
@@ -350,7 +341,6 @@ async function seed() {
           type: InterviewType.OTHER,
           title: "Fullstack Take-home",
           scheduledAt: new Date(now + 5 * day),
-          durationMinutes: null,
           status: InterviewStatus.CANCELLED,
           notes: "48h take-home cancelled.",
         },
@@ -368,7 +358,6 @@ async function seed() {
           type: InterviewType.TECHNICAL,
           title: "Security Interview",
           scheduledAt: new Date(now + 10 * day),
-          durationMinutes: 60,
           status: InterviewStatus.SCHEDULED,
           notes: "STRIDE walkthrough.",
         },
@@ -376,7 +365,6 @@ async function seed() {
           type: InterviewType.BIAS,
           title: "Work-sample review",
           scheduledAt: new Date(now + 12 * day),
-          durationMinutes: 45,
           status: InterviewStatus.SCHEDULED,
           notes: "Blind review of a past write-up.",
         },
@@ -394,7 +382,6 @@ async function seed() {
           type: InterviewType.MANAGERIAL,
           title: "SRE Culture Fit",
           scheduledAt: new Date(now - 1 * day),
-          durationMinutes: 45,
           status: InterviewStatus.MISSED,
           notes: "Candidate missed the call.",
         },
@@ -412,7 +399,6 @@ async function seed() {
           type: InterviewType.HR,
           title: "Recruiter intro",
           scheduledAt: new Date(now - 35 * day),
-          durationMinutes: 30,
           status: InterviewStatus.PASSED,
           notes: "Process overview.",
         },
@@ -420,7 +406,6 @@ async function seed() {
           type: InterviewType.MANAGERIAL,
           title: "Engineering Manager Interview",
           scheduledAt: new Date(now - 14 * day),
-          durationMinutes: 60,
           status: InterviewStatus.PASSED,
           notes: "Strong org-design answers.",
         },
@@ -464,7 +449,7 @@ async function seed() {
         histories: {
           create: {
             userId: demoUser.id,
-            action: "seeded",
+            action: "created",
             changes: {
               status: seedApp.status,
               jobId: job.id,

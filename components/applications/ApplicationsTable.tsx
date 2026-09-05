@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { ApplicationStatus } from "@/generated/prisma/enums";
 import type { Application } from "@/types/interview";
+import { Badge } from "../ui/badge";
 import DeleteInterviewModal from "./DeleteApplicationModal";
 
 export default function ApplicationsTable() {
@@ -53,6 +55,20 @@ export default function ApplicationsTable() {
     }
   }
 
+  function getApplicationStatus(applicationStatus: ApplicationStatus) {
+    switch (applicationStatus) {
+      case ApplicationStatus.ACTIVE:
+        return "default";
+      case ApplicationStatus.OFFER:
+        return "success";
+      case ApplicationStatus.REJECTED:
+      case ApplicationStatus.WITHDRAWN:
+        return "destructive";
+      default:
+        return "secondary";
+    }
+  }
+
   return (
     <Card>
       <CardContent>
@@ -98,7 +114,11 @@ export default function ApplicationsTable() {
                         ).toLocaleString()
                       : "—"}
                   </td>
-                  <td className="py-2">{application.status}</td>
+                  <td className="py-2">
+                    <Badge variant={getApplicationStatus(application.status)}>
+                      {application.status}
+                    </Badge>
+                  </td>
                   <td className="py-2">
                     <div className="flex gap-2">
                       <Link
