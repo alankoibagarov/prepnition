@@ -21,7 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from "../ui/select";
 import { Separator } from "../ui/separator";
 import { Textarea } from "../ui/textarea";
 
-export default function InterviewModal({
+export default function ApplicationModal({
   open,
   onClose,
   onSubmit,

@@ -13,7 +13,7 @@ const STAGES = [
   "OFFER",
 ] as const;
 
-export default function InterviewFunnel() {
+export default function ApplicationFunnel() {
   const [interviews, setInterviews] = useState<Interview[]>([]);
   const [loading, setLoading] = useState(true);
 

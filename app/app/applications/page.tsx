@@ -1,10 +1,10 @@
-import InterviewsTable from "@/components/interviews/InterviewsTable";
+import ApplicationsTable from "@/components/applications/ApplicationsTable";
 
-export default function InterviewsPage() {
+export default function ApplicationsPage() {
   return (
     <section className="p-6">
       <h1 className="text-2xl font-semibold mb-4">Applications</h1>
-      <InterviewsTable />
+      <ApplicationsTable />
     </section>
   );
 }

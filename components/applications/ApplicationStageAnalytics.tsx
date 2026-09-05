@@ -45,7 +45,7 @@ type StageTimingMetrics = {
   interviewsAnalyzed: number;
 };
 
-export default function InterviewStagesAnalytics() {
+export default function ApplicationStageAnalytics() {
   const [interviews, setInterviews] = useState<Interview[]>([]);
   const [loading, setLoading] = useState(true);
 

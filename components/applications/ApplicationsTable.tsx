@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import type { Application } from "@/types/interview";
-import DeleteInterviewModal from "../applications/DeleteApplicationModal";
+import DeleteInterviewModal from "./DeleteApplicationModal";
 
 export default function ApplicationsTable() {
   const [applications, setApplications] = useState<Application[]>([]);
