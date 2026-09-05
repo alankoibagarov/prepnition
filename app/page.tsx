@@ -1,11 +1,11 @@
-import CTA from "./components/CTA";
-import Features from "./components/Features";
-import Footer from "./components/Footer";
-import Gallery from "./components/Gallery";
-import Hero from "./components/Hero";
-import Navbar from "./components/Navbar";
-import Pricing from "./components/Pricing";
-import Testimonials from "./components/Testimonials";
+import CTA from "../components/landing/CTA";
+import Features from "../components/landing/Features";
+import Footer from "../components/landing/Footer";
+import Gallery from "../components/landing/Gallery";
+import Hero from "../components/landing/Hero";
+import Navbar from "../components/landing/Navbar";
+import Pricing from "../components/landing/Pricing";
+import Testimonials from "../components/landing/Testimonials";
 
 export default function Home() {
   return (

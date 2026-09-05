@@ -1,7 +1,7 @@
 import {
   type ApplicationDetailUpdate,
-  deleteApplication,
   getApplicationDetail,
+  softDeleteApplication,
   updateApplicationDetail,
 } from "@/lib/applications";
 import {
@@ -63,7 +63,7 @@ export async function DELETE(
   if (!session) return unauthorizedResponse();
 
   const { id } = await params;
-  const deleted = await deleteApplication(id, session.id);
+  const deleted = await softDeleteApplication(id, session.id);
   if (!deleted)
     return jsonResponse(
       { error: "Not found or not allowed" },

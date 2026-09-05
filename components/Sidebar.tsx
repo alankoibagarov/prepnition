@@ -4,8 +4,8 @@ import { FileText, Home } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LogoutButton } from "@/app/components/LogoutButton";
 import { capitalize } from "@/app/helpers/string";
+import { LogoutButton } from "@/components/landing/LogoutButton";
 import type { AuthUser } from "@/types/auth";
 import {
   Card,
