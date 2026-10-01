@@ -153,31 +153,38 @@ export default function ApplicationDetails({ id }: { id: string }) {
     event.preventDefault();
     setSaving(true);
     setError("");
-    const response = await fetch(`/api/protected/applications/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        status: form.status,
-        notes: form.notes || null,
-        ...(jobMode === "existing"
-          ? { jobId: selectedJobId }
-          : {
-              newJob: {
-                title: form.title,
-                description: form.description,
-                location: form.location,
-                salary: form.salary,
-                companyName: form.companyName,
-                companyUrl: form.companyUrl,
-              },
-            }),
-      }),
-    });
-    if (!response.ok) {
-      const data = await response.json().catch(() => null);
-      setError(data?.error ?? "Unable to save application");
-    } else await load();
-    setSaving(false);
+    try {
+      const response = await fetch(`/api/protected/applications/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          status: form.status,
+          notes: form.notes || null,
+          ...(jobMode === "existing"
+            ? { jobId: selectedJobId }
+            : {
+                newJob: {
+                  title: form.title,
+                  description: form.description,
+                  location: form.location,
+                  salary: form.salary,
+                  companyName: form.companyName,
+                  companyUrl: form.companyUrl,
+                },
+              }),
+        }),
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        setError(data?.error ?? "Unable to save application");
+      } else await load();
+    } catch (cause) {
+      setError(
+        cause instanceof Error ? cause.message : "Unable to save application",
+      );
+    } finally {
+      setSaving(false);
+    }
   }
   function startInterview(interview?: Interview) {
     setEditingInterview(interview?.id ?? "new");
@@ -216,28 +223,41 @@ export default function ApplicationDetails({ id }: { id: string }) {
       editingInterview === "new"
         ? `/api/protected/applications/${id}/interviews`
         : `/api/protected/applications/${id}/interviews/${editingInterview}`;
-    const response = await fetch(endpoint, {
-      method: editingInterview === "new" ? "POST" : "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    if (!response.ok) {
-      const data = await response.json().catch(() => null);
-      setError(data?.error ?? "Unable to save interview");
-    } else {
-      setEditingInterview(null);
-      await load();
+    try {
+      const response = await fetch(endpoint, {
+        method: editingInterview === "new" ? "POST" : "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        setError(data?.error ?? "Unable to save interview");
+      } else {
+        setEditingInterview(null);
+        await load();
+      }
+    } catch (cause) {
+      setError(
+        cause instanceof Error ? cause.message : "Unable to save interview",
+      );
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   }
   async function deleteInterview(interviewId: string) {
     if (!window.confirm("Delete this interview?")) return;
-    const response = await fetch(
-      `/api/protected/applications/${id}/interviews/${interviewId}`,
-      { method: "DELETE" },
-    );
-    if (response.ok) await load();
-    else setError("Unable to delete interview");
+    try {
+      const response = await fetch(
+        `/api/protected/applications/${id}/interviews/${interviewId}`,
+        { method: "DELETE" },
+      );
+      if (response.ok) await load();
+      else setError("Unable to delete interview");
+    } catch (cause) {
+      setError(
+        cause instanceof Error ? cause.message : "Unable to delete interview",
+      );
+    }
   }
 
   function parseHistoryChanges(changes: Record<string, unknown>) {

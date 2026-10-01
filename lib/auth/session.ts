@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { findUserById } from "@/lib/auth/users";
 import type { AuthUser } from "@/types/auth";
 import { getAccessToken } from "./cookies";
 import { verifyAccessToken } from "./jwt";
@@ -14,13 +15,7 @@ export async function getSession(): Promise<AuthUser | null> {
     return null;
   }
 
-  return {
-    id: payload.sub,
-    email: payload.email,
-    firstName: payload.firstName || "",
-    lastName: payload.lastName || "",
-    avatarUrl: payload.avatarUrl || "",
-  };
+  return findUserById(payload.sub);
 }
 
 export async function requireAuth(): Promise<AuthUser> {

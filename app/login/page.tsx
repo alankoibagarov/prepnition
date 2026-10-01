@@ -14,10 +14,22 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+function getSafeCallbackUrl(value: string | null) {
+  if (!value) return "/app";
+
+  try {
+    const destination = new URL(value, "http://localhost");
+    if (destination.origin !== "http://localhost") return "/app";
+    return `${destination.pathname}${destination.search}${destination.hash}`;
+  } catch {
+    return "/app";
+  }
+}
+
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") ?? "/app";
+  const callbackUrl = getSafeCallbackUrl(searchParams.get("callbackUrl"));
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
