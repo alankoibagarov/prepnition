@@ -1,7 +1,8 @@
 "use client";
 import { Plus, RefreshCw, TableOfContents, Trash } from "lucide-react";
 import Link from "next/link";
-import { type FormEvent, useCallback, useEffect, useState } from "react";
+import { type FormEvent, useState } from "react";
+import { useApplications } from "@/app/hooks/useApplications";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Card,
@@ -39,8 +40,7 @@ function getNextInterview(application: Application) {
 }
 
 export default function ApplicationsTable() {
-  const [applications, setApplications] = useState<Application[]>([]);
-  const [loading, setLoading] = useState(false);
+  const { applications, loading, reload } = useApplications();
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [availableJobs, setAvailableJobs] = useState<JobOption[]>([]);
   const [selectedJobId, setSelectedJobId] = useState("");
@@ -51,24 +51,6 @@ export default function ApplicationsTable() {
   const [selectedForDelete, setSelectedForDelete] = useState<string | null>(
     null,
   );
-
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/protected/applications");
-      if (!res.ok) throw new Error("Failed to load");
-      const data = await res.json();
-      setApplications(data.applications ?? []);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    load();
-  }, [load]);
 
   async function openDeleteModal(id: string) {
     setSelectedForDelete(id);
@@ -114,7 +96,7 @@ export default function ApplicationsTable() {
         throw new Error(data?.error ?? "Unable to create application");
       }
       setAddModalOpen(false);
-      await load();
+      await reload();
     } catch (error) {
       setAddError(
         error instanceof Error ? error.message : "Unable to create application",
@@ -131,7 +113,7 @@ export default function ApplicationsTable() {
       });
       if (!res.ok) throw new Error("Not found");
       setDeleteModalOpen(false);
-      load();
+      reload();
     } catch (e) {
       console.error(e);
       // fallback: close modal if error
@@ -165,7 +147,7 @@ export default function ApplicationsTable() {
             <Plus />
             Add Application
           </Button>
-          <Button onClick={() => load()} disabled={loading} variant="outline">
+          <Button onClick={() => reload()} disabled={loading} variant="outline">
             <RefreshCw />
             Refresh
           </Button>

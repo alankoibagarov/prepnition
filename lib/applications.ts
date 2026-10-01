@@ -134,6 +134,7 @@ function mapApplicationToInterview(
     },
     interviews: interviews?.map((interview) => ({
       id: interview.id,
+      type: interview.type,
       title: interview.title,
       scheduledAt: interview.scheduledAt ?? null,
       status: interview.status,
