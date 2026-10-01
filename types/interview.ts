@@ -1,10 +1,8 @@
-export enum InterviewStatus {
-  DRAFT = "DRAFT",
-  ACTIVE = "ACTIVE",
-  REJECTED = "REJECTED",
-  WITHDRAWN = "WITHDRAWN",
-  OFFER = "OFFER",
-}
+import type {
+  ApplicationStatus,
+  InterviewStatus as NestedInterviewStatus,
+  InterviewType,
+} from "@/generated/prisma/enums";
 
 export type InterviewHistory = {
   id: string;
@@ -15,12 +13,21 @@ export type InterviewHistory = {
   createdAt: string;
 };
 
+export type ApplicationInterview = {
+  id: string;
+  type: InterviewType;
+  title: string;
+  scheduledAt?: string | null;
+  status: NestedInterviewStatus;
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type Application = {
   id: string;
   userId: string;
-  position?: string | null;
-  scheduledAt?: string | null;
-  status: InterviewStatus;
+  status: ApplicationStatus;
   notes?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -37,20 +44,5 @@ export type Application = {
     location?: string | null;
     salary?: string | null;
   } | null;
-  interviews: Interview[] | null;
-};
-
-export type Interview = {
-  id: string;
-  userId: string;
-  title: string;
-  company?: string | null;
-  position?: string | null;
-  scheduledAt?: string | Date | null;
-  status: InterviewStatus;
-  notes?: string | null;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt?: string | null;
-  history?: InterviewHistory[];
+  interviews: ApplicationInterview[] | null;
 };
