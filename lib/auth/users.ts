@@ -7,13 +7,14 @@ export type StoredUser = AuthUser & {
 };
 
 /**
- * Find user by email, excluding soft-deleted users
+ * Find active user by email
  */
 export async function findUserByEmail(email: string): Promise<AuthUser | null> {
   const user = await prisma.user.findFirst({
     where: {
       email: email.toLowerCase(),
       deletedAt: null,
+      status: "ACTIVE",
     },
   });
 
@@ -31,13 +32,14 @@ export async function findUserByEmail(email: string): Promise<AuthUser | null> {
 }
 
 /**
- * Find user by ID, excluding soft-deleted users
+ * Find active user by ID
  */
 export async function findUserById(id: string): Promise<AuthUser | null> {
   const user = await prisma.user.findFirst({
     where: {
       id,
       deletedAt: null,
+      status: "ACTIVE",
     },
   });
 
@@ -65,6 +67,7 @@ export async function validateCredentials(
     where: {
       email: email.toLowerCase(),
       deletedAt: null,
+      status: "ACTIVE",
     },
   });
 

@@ -1,8 +1,5 @@
-import {
-  type CreateApplicationInput,
-  createApplication,
-  getApplications,
-} from "@/lib/applications";
+import { ApplicationStatus } from "@/generated/prisma/enums";
+import { createApplication, getApplications } from "@/lib/applications";
 import {
   badRequestResponse,
   jsonResponse,
@@ -10,7 +7,22 @@ import {
 } from "@/lib/auth/api";
 import { RESPONSE_CODES } from "@/lib/auth/enums";
 import { getSession } from "@/lib/auth/session";
-import { InterviewStatus } from "@/types/interview";
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isApplicationStatus(value: unknown): value is ApplicationStatus {
+  return Object.values(ApplicationStatus).some((status) => status === value);
+}
+
+function optionalDate(value: unknown, field: string) {
+  if (value === undefined || value === null) return value;
+  if (typeof value !== "string" || Number.isNaN(Date.parse(value))) {
+    throw new Error(`${field} must be a valid date`);
+  }
+  return new Date(value);
+}
 
 export async function GET() {
   const session = await getSession();
@@ -24,27 +36,49 @@ export async function POST(request: Request) {
   const session = await getSession();
   if (!session) return unauthorizedResponse();
 
-  let body: Partial<CreateApplicationInput> = {};
+  let parsedBody: unknown;
   try {
-    const parsed = await request.json();
-    body =
-      parsed && typeof parsed === "object"
-        ? (parsed as Partial<CreateApplicationInput>)
-        : {};
+    parsedBody = await request.json();
   } catch {
     return badRequestResponse("Invalid JSON body");
   }
 
-  const jobId = (body.jobId ?? "").trim();
+  if (!isRecord(parsedBody)) return badRequestResponse("Invalid JSON body");
+
+  const jobId =
+    typeof parsedBody.jobId === "string" ? parsedBody.jobId.trim() : "";
   if (!jobId) return badRequestResponse("Job ID is required");
+
+  const status = parsedBody.status ?? ApplicationStatus.DRAFT;
+  if (!isApplicationStatus(status)) {
+    return badRequestResponse("Invalid application status");
+  }
+
+  if (
+    parsedBody.notes !== undefined &&
+    parsedBody.notes !== null &&
+    typeof parsedBody.notes !== "string"
+  ) {
+    return badRequestResponse("Notes must be a string");
+  }
+
+  let appliedAt: Date | null | undefined;
+  let closedAt: Date | null | undefined;
+  try {
+    appliedAt = optionalDate(parsedBody.appliedAt, "Applied at");
+    closedAt = optionalDate(parsedBody.closedAt, "Closed at");
+  } catch (error) {
+    return badRequestResponse(
+      error instanceof Error ? error.message : "Invalid application dates",
+    );
+  }
 
   const application = await createApplication(session.id, {
     jobId,
-    status:
-      (body.status as InterviewStatus | undefined) ?? InterviewStatus.DRAFT,
-    appliedAt: body.appliedAt ?? null,
-    closedAt: body.closedAt ?? null,
-    notes: body.notes ?? null,
+    status,
+    appliedAt,
+    closedAt,
+    notes: parsedBody.notes ?? null,
   });
 
   return jsonResponse({ application }, RESPONSE_CODES.CREATED);
