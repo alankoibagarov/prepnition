@@ -1,9 +1,9 @@
 "use client";
 
+import { capitalize } from "@/app/helpers/string";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ApplicationStatus } from "@/generated/prisma/enums";
 import type { Application } from "@/types/interview";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { capitalize } from "@/app/helpers/string";
 
 const STATUS_ORDER: ApplicationStatus[] = [
   ApplicationStatus.ACTIVE,

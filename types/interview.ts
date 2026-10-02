@@ -36,7 +36,8 @@ export type Application = {
   company: {
     id: string;
     name: string;
-  } | null;
+    url: string;
+  };
   job: {
     id: string;
     title: string;

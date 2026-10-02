@@ -169,25 +169,30 @@ async function seed() {
     },
   ] as const;
 
-  const createdJobs: { id: string; title: string; companyName: string }[] = [];
+  const createdJobs: {
+    id: string;
+    title: string;
+    companyName: string;
+    companyId: string;
+  }[] = [];
 
   for (const company of companySeeds) {
     const created = await prisma.companies.create({
       data: {
         name: company.name,
         url: company.url,
-        jobs: {
-          create: company.jobs.map((job) => ({ ...job })),
-        },
       },
-      include: { jobs: true },
     });
 
-    for (const job of created.jobs) {
+    const jobs = await Promise.all(
+      company.jobs.map((job) => prisma.jobs.create({ data: { ...job } })),
+    );
+    for (const job of jobs) {
       createdJobs.push({
         id: job.id,
         title: job.title,
         companyName: created.name,
+        companyId: created.id,
       });
     }
   }
@@ -439,6 +444,7 @@ async function seed() {
       data: {
         profileId: demoProfile.id,
         jobId: job.id,
+        companyId: job.companyId,
         status: seedApp.status,
         appliedAt: seedApp.appliedAt,
         closedAt: seedApp.closedAt,
@@ -453,6 +459,7 @@ async function seed() {
             changes: {
               status: seedApp.status,
               jobId: job.id,
+              company: seedApp.companyName,
             },
           },
         },

@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import type { DateRange } from "react-day-picker";
 import { getUpcomingInterviews } from "@/app/helpers/dashboard";
 import { capitalize } from "@/app/helpers/string";
-import type { Application } from "@/types/interview";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { DateRange } from "react-day-picker";
+import type { Application } from "@/types/interview";
 
 export default function UpcomingInterviews({
   applications,

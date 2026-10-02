@@ -4,20 +4,16 @@ import {
   type InterviewType,
   type Prisma,
 } from "@/generated/prisma/client";
-import type { CompaniesModel } from "@/generated/prisma/models/Companies";
-import type { InterviewsModel } from "@/generated/prisma/models/Interviews";
-import type { JobsModel } from "@/generated/prisma/models/Jobs";
 import { prisma } from "@/lib/prisma";
 
 export type ApplicationDetailUpdate = {
   jobId?: string;
+  companyId?: string;
   newJob?: {
     title: string;
     description: string;
     location: string;
     salary: string;
-    companyName: string;
-    companyUrl: string;
   };
   status?: ApplicationStatus;
   appliedAt?: string | null;
@@ -29,7 +25,6 @@ export type ApplicationDetailUpdate = {
     location?: string;
     salary?: string;
   };
-  company?: { name?: string; url?: string };
 };
 
 export type InterviewInput = {
@@ -43,7 +38,8 @@ export type InterviewInput = {
 export type InterviewUpdate = Partial<InterviewInput>;
 
 const detailInclude = {
-  job: { include: { company: true } },
+  job: true,
+  company: true,
   interviews: { orderBy: { scheduledAt: "asc" as const } },
   histories: { orderBy: { createdAt: "desc" as const } },
 } satisfies Prisma.ApplicationsInclude;
@@ -79,13 +75,15 @@ function nonEmpty(value: unknown, field: string): string {
 }
 
 function serializeApplication(application: ApplicationWithDetails) {
-  const { jobId: _jobId, ...applicationWithoutJobId } = application;
-  const { companyId: _companyId, ...jobWithoutCompanyId } =
-    applicationWithoutJobId.job;
-  const { company, ...job } = jobWithoutCompanyId;
+  const {
+    jobId: _jobId,
+    companyId: _companyId,
+    ...applicationWithoutRelationIds
+  } = application;
+  const { job, company, ...rest } = applicationWithoutRelationIds;
 
   return {
-    ...applicationWithoutJobId,
+    ...rest,
     job,
     company,
   };
@@ -93,6 +91,15 @@ function serializeApplication(application: ApplicationWithDetails) {
 
 type ApplicationWithHistories = Prisma.ApplicationsGetPayload<{
   include: { histories: true };
+}>;
+
+type ApplicationWithRelations = Prisma.ApplicationsGetPayload<{
+  include: {
+    histories: { orderBy: { createdAt: "asc" } };
+    interviews: true;
+    job: true;
+    company: true;
+  };
 }>;
 
 async function getProfileIdForUser(userId: string): Promise<string | null> {
@@ -108,31 +115,37 @@ function mapHistory(history: ApplicationWithHistories["histories"][number]) {
 }
 
 function mapApplicationToInterview(
-  application: ApplicationWithHistories,
+  application: ApplicationWithRelations,
   userId: string,
-  job: JobsModel | null,
-  company: CompaniesModel | null,
-  interviews: InterviewsModel[] | null,
 ) {
-  const { profileId: _profileId, histories, ...rest } = application;
+  const {
+    profileId: _profileId,
+    companyId: _companyId,
+    jobId: _jobId,
+    histories,
+    interviews,
+    job,
+    company,
+    ...rest
+  } = application;
   return {
     ...rest,
     userId,
     status: rest.status,
     history: histories.map(mapHistory),
     job: {
-      id: job?.id ?? null,
-      title: job?.title ?? null,
-      description: job?.description ?? null,
-      location: job?.location ?? null,
-      salary: job?.salary ?? null,
+      id: job.id,
+      title: job.title,
+      description: job.description,
+      location: job.location,
+      salary: job.salary,
     },
     company: {
-      id: company?.id ?? null,
-      name: company?.name ?? null,
-      url: company?.url ?? null,
+      id: company.id,
+      name: company.name,
+      url: company.url,
     },
-    interviews: interviews?.map((interview) => ({
+    interviews: interviews.map((interview) => ({
       id: interview.id,
       type: interview.type,
       title: interview.title,
@@ -158,35 +171,17 @@ export async function getApplications(
     orderBy: { createdAt: "desc" },
     take,
     skip,
-    include: { histories: { orderBy: { createdAt: "asc" } } },
+    include: {
+      histories: { orderBy: { createdAt: "asc" } },
+      interviews: true,
+      job: true,
+      company: true,
+    },
   });
 
-  const jobs = await prisma.jobs.findMany({
-    where: { id: { in: applications.map((app) => app.jobId) } },
-  });
-  const jobMap = new Map(jobs.map((job) => [job.id, job]));
-
-  const companies = await prisma.companies.findMany({
-    where: { id: { in: jobs.map((job) => job.companyId) } },
-  });
-  const companyMap = new Map(companies.map((company) => [company.id, company]));
-
-  const interviews = await prisma.interviews.findMany({
-    where: { applicationId: { in: applications.map((app) => app.id) } },
-  });
-
-  const results = applications.map((app) =>
-    mapApplicationToInterview(
-      app,
-      userId,
-      jobMap.get(app.jobId) || null,
-      companyMap.get((jobMap.get(app.jobId) || null)?.companyId || "") || null,
-      interviews.filter((interview) => interview.applicationId === app.id) ||
-        null,
-    ),
+  return applications.map((application) =>
+    mapApplicationToInterview(application, userId),
   );
-
-  return results;
 }
 
 export async function getApplicationDetail(id: string, userId: string) {
@@ -204,7 +199,6 @@ export async function updateApplicationDetail(
   const diff: Record<string, { before: unknown; after: unknown }> = {};
   const applicationData: Prisma.ApplicationsUpdateInput = {};
   const jobData: Prisma.JobsUpdateInput = {};
-  const companyData: Prisma.CompaniesUpdateInput = {};
 
   if (changes.jobId !== undefined && changes.jobId !== existing.jobId) {
     const selectedJob = await prisma.jobs.findUnique({
@@ -213,6 +207,21 @@ export async function updateApplicationDetail(
     if (!selectedJob) throw new Error("Selected job was not found");
     applicationData.job = { connect: { id: changes.jobId } };
     diff.jobId = { before: existing.jobId, after: changes.jobId };
+  }
+
+  if (
+    changes.companyId !== undefined &&
+    changes.companyId !== existing.companyId
+  ) {
+    const selectedCompany = await prisma.companies.findUnique({
+      where: { id: changes.companyId },
+    });
+    if (!selectedCompany) throw new Error("Selected company was not found");
+    applicationData.company = { connect: { id: selectedCompany.id } };
+    diff.company = {
+      before: existing.company.name,
+      after: selectedCompany.name,
+    };
   }
 
   if (changes.status !== undefined && changes.status !== existing.status) {
@@ -260,18 +269,6 @@ export async function updateApplicationDetail(
       diff[`job.${field}`] = { before: existing.job[field], after: nextValue };
     }
   }
-  for (const field of ["name", "url"] as const) {
-    if (changes.newJob) continue;
-    const value = changes.company?.[field];
-    if (value !== undefined && value !== existing.job.company[field]) {
-      const nextValue = nonEmpty(value, `company.${field}`);
-      companyData[field] = nextValue;
-      diff[`company.${field}`] = {
-        before: existing.job.company[field],
-        after: nextValue,
-      };
-    }
-  }
   if (changes.newJob) {
     diff.newJob = { before: null, after: "created" };
   }
@@ -285,24 +282,12 @@ export async function updateApplicationDetail(
           description: nonEmpty(changes.newJob.description, "job.description"),
           location: nonEmpty(changes.newJob.location, "job.location"),
           salary: nonEmpty(changes.newJob.salary, "job.salary"),
-          company: {
-            create: {
-              name: nonEmpty(changes.newJob.companyName, "company.name"),
-              url: nonEmpty(changes.newJob.companyUrl, "company.url"),
-            },
-          },
         },
-        include: { company: true },
       });
       applicationData.job = { connect: { id: newJob.id } };
       diff.jobId = { before: existing.jobId, after: newJob.id };
       diff.job = { before: existing.job, after: newJob };
     }
-    if (Object.keys(companyData).length)
-      await tx.companies.update({
-        where: { id: existing.job.companyId },
-        data: companyData,
-      });
     if (Object.keys(jobData).length)
       await tx.jobs.update({ where: { id: existing.jobId }, data: jobData });
     const application = await tx.applications.update({
@@ -324,6 +309,7 @@ export async function updateApplicationDetail(
 
 export type CreateApplicationInput = {
   jobId: string;
+  companyId: string;
   status?: ApplicationStatus;
   appliedAt?: Date | string | null;
   closedAt?: Date | string | null;
@@ -361,13 +347,22 @@ export async function createApplication(
   userId: string,
   data: CreateApplicationInput,
 ) {
+  const jobId = nonEmpty(data.jobId, "Job ID");
+  const companyId = nonEmpty(data.companyId, "Company ID");
+  const job = await prisma.jobs.findUnique({ where: { id: jobId } });
+  if (!job) throw new Error("Selected job was not found");
+  const company = await prisma.companies.findUnique({
+    where: { id: companyId },
+  });
+  if (!company) throw new Error("Selected company was not found");
   const profileId = await getOrCreateProfileId(userId);
 
   const created = await prisma.$transaction(async (tx) => {
     const application = await tx.applications.create({
       data: {
         profileId,
-        jobId: data.jobId,
+        jobId,
+        companyId,
         status: toApplicationStatus(data.status),
         appliedAt: data.appliedAt ? new Date(data.appliedAt) : null,
         closedAt: data.closedAt ? new Date(data.closedAt) : null,
@@ -376,7 +371,8 @@ export async function createApplication(
     });
 
     const changes = {
-      jobId: { before: null, after: application.jobId },
+      jobId: { before: null, after: jobId },
+      company: { before: null, after: company.name },
       status: { before: null, after: application.status },
       appliedAt: { before: null, after: application.appliedAt },
       closedAt: { before: null, after: application.closedAt },
@@ -431,6 +427,19 @@ export async function updateApplication(
     diff.jobId = { before: existing.jobId, after: changes.jobId ?? null };
   }
   if (
+    typeof changes.companyId !== "undefined" &&
+    changes.companyId !== existing.companyId
+  ) {
+    const company = await prisma.companies.findUnique({
+      where: { id: changes.companyId },
+    });
+    if (!company) throw new Error("Selected company was not found");
+    diff.companyId = {
+      before: existing.companyId,
+      after: changes.companyId,
+    };
+  }
+  if (
     typeof changes.status !== "undefined" &&
     toApplicationStatus(changes.status) !== existing.status
   ) {
@@ -475,6 +484,7 @@ export async function updateApplication(
       where: { id },
       data: {
         jobId: changes.jobId ?? existing.jobId,
+        companyId: changes.companyId ?? existing.companyId,
         status: changes.status
           ? toApplicationStatus(changes.status)
           : existing.status,

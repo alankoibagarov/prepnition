@@ -22,10 +22,7 @@ export default function AppHome() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <MainPageFilters
-        dateRange={dateRange}
-        onDateRangeChange={setDateRange}
-      />
+      <MainPageFilters dateRange={dateRange} onDateRangeChange={setDateRange} />
 
       <StatusSummaryCards
         applications={filteredApplications}

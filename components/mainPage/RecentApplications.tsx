@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import type { Application } from "@/types/interview";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ApplicationStatus } from "@/generated/prisma/enums";
+import type { Application } from "@/types/interview";
 
 function getStatusVariant(status: ApplicationStatus) {
   switch (status) {
