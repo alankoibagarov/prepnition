@@ -1,19 +1,10 @@
-import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
-
-const jobInclude = { company: true } satisfies Prisma.JobsInclude;
-
-export type JobWithCompany = Prisma.JobsGetPayload<{
-  include: typeof jobInclude;
-}>;
 
 export type CreateJobInput = {
   title: string;
   description: string;
   location: string;
   salary: string;
-  companyName: string;
-  companyUrl: string;
 };
 
 function required(value: unknown, field: string) {
@@ -28,14 +19,9 @@ export async function getJobs(search?: string) {
   return prisma.jobs.findMany({
     where: query
       ? {
-          OR: [
-            { title: { contains: query } },
-            { salary: { contains: query } },
-            { company: { name: { contains: query } } },
-          ],
+          OR: [{ title: { contains: query } }, { salary: { contains: query } }],
         }
       : undefined,
-    include: jobInclude,
     orderBy: { createdAt: "desc" },
     take: 100,
   });
@@ -46,8 +32,6 @@ export async function createJob(input: CreateJobInput) {
   const description = required(input.description, "Description");
   const location = required(input.location, "Location");
   const salary = required(input.salary, "Salary");
-  const companyName = required(input.companyName, "Company name");
-  const companyUrl = required(input.companyUrl, "Company URL");
 
   return prisma.jobs.create({
     data: {
@@ -55,8 +39,6 @@ export async function createJob(input: CreateJobInput) {
       description,
       location,
       salary,
-      company: { create: { name: companyName, url: companyUrl } },
     },
-    include: jobInclude,
   });
 }

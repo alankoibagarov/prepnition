@@ -1,6 +1,9 @@
 "use client";
 import { Pencil, Plus, Save, Trash2, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import CompanySelector, {
+  type CompanyOption,
+} from "@/components/applications/CompanySelector";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "@/components/ui/field";
@@ -36,7 +39,7 @@ type Application = {
     location: string;
     salary: string;
   };
-  company: { id: string; name: string; url: string };
+  company: CompanyOption;
   interviews: Interview[];
   histories: {
     id: string;
@@ -51,7 +54,6 @@ type Job = {
   description: string;
   location: string;
   salary: string;
-  company: { id: string; name: string; url: string };
 };
 
 const statuses = ["DRAFT", "ACTIVE", "REJECTED", "WITHDRAWN", "OFFER"];
@@ -87,6 +89,9 @@ export default function ApplicationDetails({ id }: { id: string }) {
   const [jobSearch, setJobSearch] = useState("");
   const [jobMode, setJobMode] = useState<"existing" | "new">("existing");
   const [selectedJobId, setSelectedJobId] = useState("");
+  const [selectedCompany, setSelectedCompany] = useState<CompanyOption | null>(
+    null,
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -109,10 +114,9 @@ export default function ApplicationDetails({ id }: { id: string }) {
         description: item.job.description,
         location: item.job.location,
         salary: item.job.salary,
-        companyName: item.company.name,
-        companyUrl: item.company.url,
       });
       setSelectedJobId(item.job.id);
+      setSelectedCompany(item.company);
     } catch (cause) {
       setError(
         cause instanceof Error ? cause.message : "Unable to load application",
@@ -160,6 +164,7 @@ export default function ApplicationDetails({ id }: { id: string }) {
         body: JSON.stringify({
           status: form.status,
           notes: form.notes || null,
+          companyId: selectedCompany?.id,
           ...(jobMode === "existing"
             ? { jobId: selectedJobId }
             : {
@@ -168,8 +173,6 @@ export default function ApplicationDetails({ id }: { id: string }) {
                   description: form.description,
                   location: form.location,
                   salary: form.salary,
-                  companyName: form.companyName,
-                  companyUrl: form.companyUrl,
                 },
               }),
         }),
@@ -342,8 +345,16 @@ export default function ApplicationDetails({ id }: { id: string }) {
                   onChange={(event) => setValue("notes", event.target.value)}
                 />
               </Field>
+              <Field>
+                <FieldLabel htmlFor="application-company">Company</FieldLabel>
+                <CompanySelector
+                  id="application-company"
+                  value={selectedCompany}
+                  onChange={setSelectedCompany}
+                />
+              </Field>
             </FieldGroup>
-            <Button type="submit" disabled={saving}>
+            <Button type="submit" disabled={saving || !selectedCompany}>
               <Save />
               {saving ? "Saving..." : "Save application"}
             </Button>
@@ -378,7 +389,7 @@ export default function ApplicationDetails({ id }: { id: string }) {
                   <FieldLabel htmlFor="job-search">Search jobs</FieldLabel>
                   <Input
                     id="job-search"
-                    placeholder="Search title, company, or salary"
+                    placeholder="Search title or salary"
                     value={jobSearch}
                     onChange={(event) => setJobSearch(event.target.value)}
                   />
@@ -397,14 +408,12 @@ export default function ApplicationDetails({ id }: { id: string }) {
                           description: job.description,
                           location: job.location,
                           salary: job.salary,
-                          companyName: job.company.name,
-                          companyUrl: job.company.url,
                         }));
                       }}
                     >
                       <span className="block font-medium">{job.title}</span>
                       <span className="block text-sm text-muted-foreground">
-                        {job.company.name} · {job.salary}
+                        {job.salary}
                       </span>
                     </button>
                   ))}
@@ -453,25 +462,6 @@ export default function ApplicationDetails({ id }: { id: string }) {
                     />
                   </Field>
                 </div>
-                <Field>
-                  <FieldLabel>Company name</FieldLabel>
-                  <Input
-                    value={form.companyName}
-                    onChange={(event) =>
-                      setValue("companyName", event.target.value)
-                    }
-                  />
-                </Field>
-                <Field>
-                  <FieldLabel>Company URL</FieldLabel>
-                  <Input
-                    type="url"
-                    value={form.companyUrl}
-                    onChange={(event) =>
-                      setValue("companyUrl", event.target.value)
-                    }
-                  />
-                </Field>
               </FieldSet>
             )}
           </CardContent>

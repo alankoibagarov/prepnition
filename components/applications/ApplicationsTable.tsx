@@ -15,12 +15,12 @@ import { ApplicationStatus } from "@/generated/prisma/enums";
 import type { Application } from "@/types/interview";
 import { Badge } from "../ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "../ui/select";
+import CompanySelector, { type CompanyOption } from "./CompanySelector";
 import DeleteInterviewModal from "./DeleteApplicationModal";
 
 type JobOption = {
   id: string;
   title: string;
-  company: { name: string };
 };
 
 function getNextInterview(application: Application) {
@@ -44,6 +44,9 @@ export default function ApplicationsTable() {
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [availableJobs, setAvailableJobs] = useState<JobOption[]>([]);
   const [selectedJobId, setSelectedJobId] = useState("");
+  const [selectedCompany, setSelectedCompany] = useState<CompanyOption | null>(
+    null,
+  );
   const [jobsLoading, setJobsLoading] = useState(false);
   const [creatingApplication, setCreatingApplication] = useState(false);
   const [addError, setAddError] = useState("");
@@ -81,7 +84,7 @@ export default function ApplicationsTable() {
 
   async function createApplication(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!selectedJobId) return;
+    if (!selectedJobId || !selectedCompany) return;
 
     setCreatingApplication(true);
     setAddError("");
@@ -89,7 +92,10 @@ export default function ApplicationsTable() {
       const response = await fetch("/api/protected/applications", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ jobId: selectedJobId }),
+        body: JSON.stringify({
+          jobId: selectedJobId,
+          companyId: selectedCompany.id,
+        }),
       });
       if (!response.ok) {
         const data = await response.json().catch(() => null);
@@ -250,11 +256,24 @@ export default function ApplicationsTable() {
             <CardHeader>
               <CardTitle id="add-application-title">Add application</CardTitle>
               <CardDescription>
-                Choose a job to start tracking an application.
+                Choose a company and job to start tracking an application.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={createApplication} className="space-y-4">
+                <div className="space-y-2">
+                  <label
+                    className="text-sm font-medium"
+                    htmlFor="application-company"
+                  >
+                    Company
+                  </label>
+                  <CompanySelector
+                    id="application-company"
+                    value={selectedCompany}
+                    onChange={setSelectedCompany}
+                  />
+                </div>
                 {jobsLoading ? (
                   <p className="text-sm text-muted-foreground">
                     Loading jobs...
@@ -271,7 +290,7 @@ export default function ApplicationsTable() {
                     <SelectContent>
                       {availableJobs.map((job) => (
                         <SelectItem key={job.id} value={job.id}>
-                          {job.title} — {job.company.name}
+                          {job.title}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -298,6 +317,7 @@ export default function ApplicationsTable() {
                       jobsLoading ||
                       creatingApplication ||
                       !selectedJobId ||
+                      !selectedCompany ||
                       availableJobs.length === 0
                     }
                   >

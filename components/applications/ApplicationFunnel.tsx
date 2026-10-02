@@ -1,9 +1,9 @@
 "use client";
 
-import { ApplicationStatus } from "@/generated/prisma/enums";
 import { capitalize } from "@/app/helpers/string";
-import type { Application } from "@/types/interview";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ApplicationStatus } from "@/generated/prisma/enums";
+import type { Application } from "@/types/interview";
 
 const PIPELINE_STAGES = [
   ApplicationStatus.DRAFT,
@@ -77,7 +77,11 @@ export default function ApplicationFunnel({
               const count = pipelineCounts[idx];
               const prev = idx === 0 ? count : pipelineCounts[idx - 1];
               const conversion =
-                idx === 0 ? 100 : prev > 0 ? Math.round((count / prev) * 100) : 0;
+                idx === 0
+                  ? 100
+                  : prev > 0
+                    ? Math.round((count / prev) * 100)
+                    : 0;
               const relative = Math.round((count / baseline) * 100);
 
               return (

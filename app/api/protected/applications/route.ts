@@ -48,6 +48,9 @@ export async function POST(request: Request) {
   const jobId =
     typeof parsedBody.jobId === "string" ? parsedBody.jobId.trim() : "";
   if (!jobId) return badRequestResponse("Job ID is required");
+  const companyId =
+    typeof parsedBody.companyId === "string" ? parsedBody.companyId.trim() : "";
+  if (!companyId) return badRequestResponse("Company ID is required");
 
   const status = parsedBody.status ?? ApplicationStatus.DRAFT;
   if (!isApplicationStatus(status)) {
@@ -73,13 +76,19 @@ export async function POST(request: Request) {
     );
   }
 
-  const application = await createApplication(session.id, {
-    jobId,
-    status,
-    appliedAt,
-    closedAt,
-    notes: parsedBody.notes ?? null,
-  });
-
-  return jsonResponse({ application }, RESPONSE_CODES.CREATED);
+  try {
+    const application = await createApplication(session.id, {
+      jobId,
+      companyId,
+      status,
+      appliedAt,
+      closedAt,
+      notes: parsedBody.notes ?? null,
+    });
+    return jsonResponse({ application }, RESPONSE_CODES.CREATED);
+  } catch (error) {
+    return badRequestResponse(
+      error instanceof Error ? error.message : "Invalid application data",
+    );
+  }
 }

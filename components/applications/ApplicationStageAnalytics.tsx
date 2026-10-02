@@ -1,10 +1,10 @@
 "use client";
 
-import { InterviewType } from "@/generated/prisma/enums";
 import { flattenInterviews } from "@/app/helpers/dashboard";
 import { capitalize } from "@/app/helpers/string";
-import type { Application } from "@/types/interview";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { InterviewType } from "@/generated/prisma/enums";
+import type { Application } from "@/types/interview";
 
 const INTERVIEW_TYPES = Object.values(InterviewType);
 
@@ -16,9 +16,7 @@ type TypeMetrics = {
   passRate: number;
 };
 
-function calculateTypeMetrics(
-  applications: Application[],
-): TypeMetrics[] {
+function calculateTypeMetrics(applications: Application[]): TypeMetrics[] {
   const interviews = flattenInterviews(applications);
   const map: Record<string, { total: number; passed: number; failed: number }> =
     {};
@@ -91,20 +89,17 @@ export default function ApplicationStageAnalytics({
   const topCompanies = companyMetrics.slice(0, 3);
 
   const bestType = typeMetrics.reduce(
-    (prev, current) =>
-      current.passRate > prev.passRate ? current : prev,
+    (prev, current) => (current.passRate > prev.passRate ? current : prev),
     typeMetrics[0] ?? { type: "N/A", passRate: 0 },
   );
 
   const worstType = typeMetrics.reduce(
-    (prev, current) =>
-      current.passRate < prev.passRate ? current : prev,
+    (prev, current) => (current.passRate < prev.passRate ? current : prev),
     typeMetrics[0] ?? { type: "N/A", passRate: 0 },
   );
 
   const bestCompany = companyMetrics.reduce(
-    (prev, current) =>
-      current.offerRate > prev.offerRate ? current : prev,
+    (prev, current) => (current.offerRate > prev.offerRate ? current : prev),
     companyMetrics[0] ?? { company: "N/A", offerRate: 0, total: 0 },
   );
 
