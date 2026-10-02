@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Prepnition",
   description:
-    "Elevate your interview game with Prepnition - the ultimate interview preparation platform.",
+    "Track your job search, prepare for interviews, and understand your progress with Prepnition.",
 };
 
 export default function RootLayout({
