@@ -1,4 +1,5 @@
 import type { DateRange } from "react-day-picker";
+import type { ApplicationStatus } from "@/generated/prisma/enums";
 import type { Application, ApplicationInterview } from "@/types/interview";
 
 export function isWithinDateRange(
@@ -23,12 +24,18 @@ export function isWithinDateRange(
   return true;
 }
 
-export function filterApplicationsByDateRange(
+export function filterApplications(
   applications: Application[],
   range: DateRange | undefined,
+  status?: ApplicationStatus,
+  companyId?: string,
 ): Application[] {
-  if (!range?.from) return applications;
-  return applications.filter((app) => isWithinDateRange(app.createdAt, range));
+  return applications.filter(
+    (app) =>
+      isWithinDateRange(app.createdAt, range) &&
+      (!status || app.status === status) &&
+      (!companyId || app.company.id === companyId),
+  );
 }
 
 export type UpcomingInterview = ApplicationInterview & {
