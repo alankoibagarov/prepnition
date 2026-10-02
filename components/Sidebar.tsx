@@ -26,7 +26,7 @@ export default function Sidebar({ session }: { session: AuthUser }) {
   return (
     <>
       {/* Desktop left sidebar */}
-      <aside className="hidden md:fixed md:inset-y-0 md:left-0 md:w-56 md:flex md:flex-col md:gap-4 md:py-6 md:px-3 border-r border-sidebar-border bg-sidebar overflow-hidden h-screen justify-between">
+      <aside className="hidden md:fixed md:inset-y-0 md:left-0 md:w-50 md:flex md:flex-col md:gap-4 md:py-6 md:px-3 border-r border-sidebar-border bg-sidebar overflow-hidden h-screen justify-between">
         {/* Logo / brand */}
         <div>
           <div className="px-3 pb-4">
