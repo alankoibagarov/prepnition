@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { type SubmitEvent, Suspense, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -68,6 +69,12 @@ function LoginForm() {
     <div className="flex min-h-full flex-1 items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md">
         <CardHeader>
+          <Link
+            href="/"
+            className="mb-2 w-fit text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Back to home
+          </Link>
           <CardTitle className="text-2xl">Sign in</CardTitle>
           <CardDescription>
             Demo accounts: user@demo.com or (password: password)
