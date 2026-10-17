@@ -40,7 +40,7 @@ function getNextInterview(application: Application) {
 }
 
 export default function ApplicationsTable() {
-  const { applications, loading, reload } = useApplications();
+  const { applications, loading, error, reload } = useApplications();
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [availableJobs, setAvailableJobs] = useState<JobOption[]>([]);
   const [selectedJobId, setSelectedJobId] = useState("");
@@ -144,6 +144,22 @@ export default function ApplicationsTable() {
   return (
     <Card>
       <CardContent>
+        {error && (
+          <div
+            className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive"
+            role="alert"
+          >
+            <span>{error}</span>
+            <Button
+              onClick={() => reload()}
+              disabled={loading}
+              size="sm"
+              variant="outline"
+            >
+              Retry
+            </Button>
+          </div>
+        )}
         <div className="mb-4 flex gap-4">
           <Button
             disabled={loading || jobsLoading}

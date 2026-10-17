@@ -13,7 +13,7 @@ import UpcomingInterviews from "@/components/mainPage/UpcomingInterviews";
 import type { ApplicationStatus } from "@/generated/prisma/enums";
 
 export default function AppHome() {
-  const { applications, loading } = useApplications();
+  const { applications, loading, error } = useApplications();
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [status, setStatus] = useState<ApplicationStatus | undefined>(
     undefined,
@@ -27,6 +27,14 @@ export default function AppHome() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
+      {error && (
+        <p
+          className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive"
+          role="alert"
+        >
+          {error}
+        </p>
+      )}
       <MainPageFilters
         applications={applications}
         dateRange={dateRange}
