@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText, Home } from "lucide-react";
+import { Building2, FileText, Home } from "lucide-react";
 // import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -21,7 +21,14 @@ export default function Sidebar({ session }: { session: AuthUser }) {
   const items = [
     { href: "/app", label: "Home", icon: Home },
     { href: "/app/applications", label: "Applications", icon: FileText },
+    { href: "/app/companies", label: "Companies", icon: Building2 },
   ];
+
+  function isActive(href: string) {
+    return href === "/app"
+      ? pathname === href
+      : pathname === href || pathname.startsWith(`${href}/`);
+  }
 
   return (
     <>
@@ -43,10 +50,7 @@ export default function Sidebar({ session }: { session: AuthUser }) {
           <nav aria-label="Main" className="flex flex-col gap-1 px-3">
             {items.map((it) => {
               const Icon = it.icon;
-              const active =
-                pathname === "/app"
-                  ? pathname === it.href
-                  : pathname.includes(it.href) && it.href !== "/app";
+              const active = isActive(it.href);
               return (
                 <Link
                   key={it.href}
@@ -100,7 +104,7 @@ export default function Sidebar({ session }: { session: AuthUser }) {
       >
         {items.map((it) => {
           const Icon = it.icon;
-          const active = pathname === it.href;
+          const active = isActive(it.href);
           return (
             <Link
               key={it.href}

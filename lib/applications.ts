@@ -198,7 +198,9 @@ export async function updateApplicationDetail(
       where: { id: changes.jobId },
       include: { company: true },
     });
-    if (!selectedJob) throw new Error("Selected job was not found");
+    if (!selectedJob || selectedJob.company.deletedAt) {
+      throw new Error("Selected job was not found");
+    }
     applicationData.job = { connect: { id: changes.jobId } };
     diff.jobId = { before: existing.jobId, after: changes.jobId };
     if (selectedJob.companyId !== existing.job.companyId) {
@@ -265,7 +267,9 @@ export async function updateApplicationDetail(
       const company = await tx.companies.findUnique({
         where: { id: companyId },
       });
-      if (!company) throw new Error("Selected company was not found");
+      if (!company || company.deletedAt) {
+        throw new Error("Selected company was not found");
+      }
       const newJob = await tx.jobs.create({
         data: {
           title: nonEmpty(changes.newJob.title, "job.title"),

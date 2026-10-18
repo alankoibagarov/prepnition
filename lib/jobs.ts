@@ -18,11 +18,17 @@ function required(value: unknown, field: string) {
 export async function getJobs(search?: string) {
   const query = search?.trim();
   return prisma.jobs.findMany({
-    where: query
-      ? {
-          OR: [{ title: { contains: query } }, { salary: { contains: query } }],
-        }
-      : undefined,
+    where: {
+      company: { deletedAt: null },
+      ...(query
+        ? {
+            OR: [
+              { title: { contains: query } },
+              { salary: { contains: query } },
+            ],
+          }
+        : {}),
+    },
     orderBy: { createdAt: "desc" },
     take: 100,
     include: { company: true },
@@ -37,9 +43,11 @@ export async function createJob(input: CreateJobInput) {
   const companyId = required(input.companyId, "Company ID");
   const company = await prisma.companies.findUnique({
     where: { id: companyId },
-    select: { id: true },
+    select: { id: true, deletedAt: true },
   });
-  if (!company) throw new Error("Selected company was not found");
+  if (!company || company.deletedAt) {
+    throw new Error("Selected company was not found");
+  }
 
   return prisma.jobs.create({
     data: {
