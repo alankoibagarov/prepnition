@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { ApplicationStatus } from "@/generated/prisma/enums";
 import type { Application } from "@/types/interview";
 import { Badge } from "../ui/badge";
@@ -43,6 +44,7 @@ function getNextInterview(application: Application) {
 
 export default function ApplicationsTable() {
   const { applications, loading, error, reload } = useApplications();
+  const [search, setSearch] = useState("");
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [availableJobs, setAvailableJobs] = useState<JobOption[]>([]);
   const [selectedJobId, setSelectedJobId] = useState("");
@@ -53,6 +55,25 @@ export default function ApplicationsTable() {
   const [selectedForDelete, setSelectedForDelete] = useState<string | null>(
     null,
   );
+  const normalizedSearch = search.trim().toLocaleLowerCase();
+  const filteredApplications = applications.filter((application) => {
+    const nextInterview = getNextInterview(application);
+    const searchableValues = [
+      application.job?.title ?? "—",
+      application.company?.name ?? "—",
+      application.createdAt
+        ? new Date(application.createdAt).toLocaleString()
+        : "—",
+      nextInterview?.scheduledAt
+        ? new Date(nextInterview.scheduledAt).toLocaleString()
+        : "—",
+      application.status,
+    ];
+
+    return searchableValues.some((value) =>
+      value.toLocaleLowerCase().includes(normalizedSearch),
+    );
+  });
 
   async function openDeleteModal(id: string) {
     setSelectedForDelete(id);
@@ -156,19 +177,33 @@ export default function ApplicationsTable() {
             </Button>
           </div>
         )}
-        <div className="mb-4 flex gap-4">
-          <Button
-            disabled={loading || jobsLoading}
-            onClick={openAddModal}
-            variant="outline"
-          >
-            <Plus />
-            Add Application
-          </Button>
-          <Button onClick={() => reload()} disabled={loading} variant="outline">
-            <RefreshCw />
-            Refresh
-          </Button>
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <Input
+            type="search"
+            aria-label="Search applications"
+            placeholder="Search applications..."
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            className="sm:max-w-sm"
+          />
+          <div className="flex justify-end gap-4">
+            <Button
+              disabled={loading || jobsLoading}
+              onClick={openAddModal}
+              variant="outline"
+            >
+              <Plus />
+              Add Application
+            </Button>
+            <Button
+              onClick={() => reload()}
+              disabled={loading}
+              variant="outline"
+            >
+              <RefreshCw />
+              Refresh
+            </Button>
+          </div>
         </div>
 
         <div className="overflow-auto">
@@ -185,7 +220,7 @@ export default function ApplicationsTable() {
               </tr>
             </thead>
             <tbody>
-              {applications.map((application, index) => {
+              {filteredApplications.map((application, index) => {
                 const nextInterview = getNextInterview(application);
                 return (
                   <tr key={application.id} className="border-t">
@@ -235,14 +270,15 @@ export default function ApplicationsTable() {
                   </tr>
                 );
               })}
-              {applications.length === 0 && !loading && (
+              {filteredApplications.length === 0 && !loading && (
                 <tr>
                   <td
                     colSpan={7}
                     className="py-4 text-center text-sm text-muted-foreground"
                   >
-                    No Applications found. Click "Add Application" to create
-                    one.
+                    {applications.length === 0
+                      ? 'No Applications found. Click "Add Application" to create one.'
+                      : "No applications match your search."}
                   </td>
                 </tr>
               )}
