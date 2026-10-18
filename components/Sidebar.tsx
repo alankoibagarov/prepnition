@@ -1,7 +1,7 @@
 "use client";
 
 import { FileText, Home } from "lucide-react";
-import Image from "next/image";
+// import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { capitalize } from "@/app/helpers/string";
@@ -69,7 +69,7 @@ export default function Sidebar({ session }: { session: AuthUser }) {
         <Card className="mt-6">
           <CardHeader>
             <CardDescription>Signed in as</CardDescription>
-            <CardTitle>
+            {/* <CardTitle>
               <Image
                 src={session.avatarUrl || "/profile.png"}
                 alt={"Avatar"}
@@ -77,7 +77,7 @@ export default function Sidebar({ session }: { session: AuthUser }) {
                 height={75}
                 className="object-cover rounded rounded-full"
               />
-            </CardTitle>
+            </CardTitle> */}
             {(session.firstName || session.lastName) && (
               <CardTitle>
                 {capitalize(session.firstName)} {capitalize(session.lastName)}
