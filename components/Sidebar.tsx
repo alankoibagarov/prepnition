@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2, FileText, Home } from "lucide-react";
+import { Building2, FileText, Home, BriefcaseBusiness } from "lucide-react";
 // import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -22,7 +22,12 @@ export default function Sidebar({ session }: { session: AuthUser }) {
     { href: "/app", label: "Home", icon: Home },
     { href: "/app/applications", label: "Applications", icon: FileText },
     { href: "/app/companies", label: "Companies", icon: Building2 },
+    { href: "/app/jobs", label: "Jobs", icon: BriefcaseBusiness },
   ];
+  const isActive = (href: string) =>
+    href === "/app"
+      ? pathname === href
+      : pathname === href || pathname.startsWith(`${href}/`);
 
   function isActive(href: string) {
     return href === "/app"

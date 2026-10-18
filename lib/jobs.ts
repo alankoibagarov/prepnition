@@ -1,12 +1,15 @@
+import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 
 export type CreateJobInput = {
-  title: string;
-  description: string;
-  location: string;
-  salary: string;
-  companyId: string;
+  title: unknown;
+  description: unknown;
+  location: unknown;
+  salary: unknown;
+  companyId: unknown;
 };
+
+export type UpdateJobInput = Partial<CreateJobInput>;
 
 function required(value: unknown, field: string) {
   if (typeof value !== "string" || !value.trim()) {
@@ -20,11 +23,16 @@ export async function getJobs(search?: string) {
   return prisma.jobs.findMany({
     where: {
       company: { deletedAt: null },
+      deletedAt: null,
       ...(query
         ? {
             OR: [
               { title: { contains: query } },
               { salary: { contains: query } },
+              { description: { contains: query } },
+              { location: { contains: query } },
+              { salary: { contains: query } },
+              { company: { name: { contains: query } } },
             ],
           }
         : {}),
@@ -59,4 +67,43 @@ export async function createJob(input: CreateJobInput) {
     },
     include: { company: true },
   });
+}
+
+export async function updateJob(id: string, input: UpdateJobInput) {
+  const existing = await prisma.jobs.findFirst({
+    where: { id, deletedAt: null },
+    select: { id: true },
+  });
+  if (!existing) return null;
+
+  const data: Prisma.JobsUpdateInput = {};
+  for (const field of ["title", "description", "location", "salary"] as const) {
+    if (input[field] !== undefined) {
+      data[field] = required(input[field], field);
+    }
+  }
+
+  if (input.companyId !== undefined) {
+    const companyId = required(input.companyId, "Company ID");
+    const company = await prisma.companies.findUnique({
+      where: { id: companyId },
+      select: { id: true },
+    });
+    if (!company) throw new Error("Selected company was not found");
+    data.company = { connect: { id: companyId } };
+  }
+
+  return prisma.jobs.update({
+    where: { id },
+    data,
+    include: { company: true },
+  });
+}
+
+export async function softDeleteJob(id: string) {
+  const result = await prisma.jobs.updateMany({
+    where: { id, deletedAt: null },
+    data: { deletedAt: new Date() },
+  });
+  return result.count > 0;
 }

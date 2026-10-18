@@ -194,8 +194,8 @@ export async function updateApplicationDetail(
   const jobData: Prisma.JobsUpdateInput = {};
 
   if (changes.jobId !== undefined && changes.jobId !== existing.jobId) {
-    const selectedJob = await prisma.jobs.findUnique({
-      where: { id: changes.jobId },
+    const selectedJob = await prisma.jobs.findFirst({
+      where: { id: changes.jobId, deletedAt: null },
       include: { company: true },
     });
     if (!selectedJob || selectedJob.company.deletedAt) {
@@ -349,8 +349,8 @@ export async function createApplication(
   data: CreateApplicationInput,
 ) {
   const jobId = nonEmpty(data.jobId, "Job ID");
-  const job = await prisma.jobs.findUnique({
-    where: { id: jobId },
+  const job = await prisma.jobs.findFirst({
+    where: { id: jobId, deletedAt: null },
     include: { company: true },
   });
   if (!job) throw new Error("Selected job was not found");
@@ -428,8 +428,8 @@ export async function updateApplication(
         where: { id: existing.jobId },
         include: { company: true },
       }),
-      prisma.jobs.findUnique({
-        where: { id: changes.jobId },
+      prisma.jobs.findFirst({
+        where: { id: changes.jobId, deletedAt: null },
         include: { company: true },
       }),
     ]);
