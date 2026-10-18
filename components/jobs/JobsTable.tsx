@@ -158,105 +158,111 @@ export default function JobsTable() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <Input
-          aria-label="Search jobs"
-          className="sm:max-w-sm"
-          placeholder="Search jobs..."
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-        />
-        <Button onClick={openCreate}>
-          <Plus aria-hidden />
-          Add job
-        </Button>
-      </div>
+    <>
+      <Card>
+        <CardContent>
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <Input
+              aria-label="Search jobs"
+              className="sm:max-w-sm"
+              placeholder="Search jobs..."
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+            />
+            <Button onClick={openCreate} variant="outline">
+              <Plus aria-hidden />
+              Add job
+            </Button>
+          </div>
 
-      {error && !modal && (
-        <p
-          role="alert"
-          className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive"
-        >
-          {error}
-        </p>
-      )}
+          {error && !modal && (
+            <p
+              role="alert"
+              className="mb-4 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive"
+            >
+              {error}
+            </p>
+          )}
 
-      <div className="overflow-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left text-muted-foreground">
-              <th className="pb-2">Job</th>
-              <th className="pb-2">Company</th>
-              <th className="pb-2">Location</th>
-              <th className="pb-2">Salary</th>
-              <th className="pb-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {jobs.map((job) => (
-              <tr key={job.id} className="border-t">
-                <td className="py-2">
-                  <p className="font-medium">{job.title}</p>
-                  <p className="max-w-xs truncate text-muted-foreground">
-                    {job.description}
-                  </p>
-                </td>
-                <td className="py-2">{job.company.name}</td>
-                <td className="py-2">{job.location}</td>
-                <td className="py-2">{job.salary}</td>
-                <td className="py-2">
-                  <div className="flex gap-2">
-                    <Button
-                      aria-label={`Edit ${job.title}`}
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => openEdit(job)}
+          <div className="overflow-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-muted-foreground">
+                  <th className="pb-2">Job</th>
+                  <th className="pb-2">Company</th>
+                  <th className="pb-2">Location</th>
+                  <th className="pb-2">Salary</th>
+                  <th className="pb-2">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {jobs.map((job) => (
+                  <tr key={job.id} className="border-t">
+                    <td className="py-2">
+                      <p className="font-medium">{job.title}</p>
+                      <p className="max-w-xs truncate text-muted-foreground">
+                        {job.description}
+                      </p>
+                    </td>
+                    <td className="py-2">{job.company.name}</td>
+                    <td className="py-2">{job.location}</td>
+                    <td className="py-2">{job.salary}</td>
+                    <td className="py-2">
+                      <div className="flex gap-2">
+                        <Button
+                          aria-label={`Edit ${job.title}`}
+                          size="sm"
+                          variant="outline"
+                          onClick={() => openEdit(job)}
+                        >
+                          <Pencil aria-hidden />
+                          Edit
+                        </Button>
+                        <Button
+                          aria-label={`Delete ${job.title}`}
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setError("");
+                            setModal({ type: "delete", job });
+                          }}
+                        >
+                          <Trash2 aria-hidden />
+                          Delete
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {!loading && jobs.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="py-4 text-center text-sm text-muted-foreground"
                     >
-                      <Pencil aria-hidden />
-                    </Button>
-                    <Button
-                      aria-label={`Delete ${job.title}`}
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => {
-                        setError("");
-                        setModal({ type: "delete", job });
-                      }}
+                      <BriefcaseBusiness className="mx-auto mb-2 size-6 text-muted-foreground" />
+                      <p className="font-medium">No jobs found</p>
+                      <p className="mt-1 text-muted-foreground">
+                        Add a job to keep your opportunities organized.
+                      </p>
+                    </td>
+                  </tr>
+                )}
+                {loading && (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="py-4 text-center text-sm text-muted-foreground"
                     >
-                      <Trash2 aria-hidden />
-                    </Button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {!loading && jobs.length === 0 && (
-              <tr>
-                <td
-                  colSpan={5}
-                  className="py-4 text-center text-sm text-muted-foreground"
-                >
-                  <BriefcaseBusiness className="mx-auto mb-2 size-6 text-muted-foreground" />
-                  <p className="font-medium">No jobs found</p>
-                  <p className="mt-1 text-muted-foreground">
-                    Add a job to keep your opportunities organized.
-                  </p>
-                </td>
-              </tr>
-            )}
-            {loading && (
-              <tr>
-                <td
-                  colSpan={5}
-                  className="py-4 text-center text-sm text-muted-foreground"
-                >
-                  Loading jobs...
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+                      Loading jobs...
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
 
       {modal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4">
@@ -416,6 +422,6 @@ export default function JobsTable() {
           </Card>
         </div>
       )}
-    </div>
+    </>
   );
 }
