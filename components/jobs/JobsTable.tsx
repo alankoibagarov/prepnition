@@ -182,31 +182,31 @@ export default function JobsTable() {
         </p>
       )}
 
-      <div className="overflow-x-auto rounded-lg border">
-        <table className="w-full min-w-[680px] text-left text-sm">
-          <thead className="bg-muted/50 text-muted-foreground">
-            <tr>
-              <th className="px-4 py-3 font-medium">Job</th>
-              <th className="px-4 py-3 font-medium">Company</th>
-              <th className="px-4 py-3 font-medium">Location</th>
-              <th className="px-4 py-3 font-medium">Salary</th>
-              <th className="px-4 py-3 text-right font-medium">Actions</th>
+      <div className="overflow-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="text-left text-muted-foreground">
+              <th className="pb-2">Job</th>
+              <th className="pb-2">Company</th>
+              <th className="pb-2">Location</th>
+              <th className="pb-2">Salary</th>
+              <th className="pb-2">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y">
+          <tbody>
             {jobs.map((job) => (
-              <tr key={job.id}>
-                <td className="px-4 py-3">
+              <tr key={job.id} className="border-t">
+                <td className="py-2">
                   <p className="font-medium">{job.title}</p>
                   <p className="max-w-xs truncate text-muted-foreground">
                     {job.description}
                   </p>
                 </td>
-                <td className="px-4 py-3">{job.company.name}</td>
-                <td className="px-4 py-3">{job.location}</td>
-                <td className="px-4 py-3">{job.salary}</td>
-                <td className="px-4 py-3">
-                  <div className="flex justify-end gap-2">
+                <td className="py-2">{job.company.name}</td>
+                <td className="py-2">{job.location}</td>
+                <td className="py-2">{job.salary}</td>
+                <td className="py-2">
+                  <div className="flex gap-2">
                     <Button
                       aria-label={`Edit ${job.title}`}
                       size="icon"
@@ -232,7 +232,10 @@ export default function JobsTable() {
             ))}
             {!loading && jobs.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-10 text-center">
+                <td
+                  colSpan={5}
+                  className="py-4 text-center text-sm text-muted-foreground"
+                >
                   <BriefcaseBusiness className="mx-auto mb-2 size-6 text-muted-foreground" />
                   <p className="font-medium">No jobs found</p>
                   <p className="mt-1 text-muted-foreground">
@@ -245,7 +248,7 @@ export default function JobsTable() {
               <tr>
                 <td
                   colSpan={5}
-                  className="px-4 py-10 text-center text-muted-foreground"
+                  className="py-4 text-center text-sm text-muted-foreground"
                 >
                   Loading jobs...
                 </td>
