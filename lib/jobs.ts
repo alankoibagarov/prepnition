@@ -5,6 +5,7 @@ export type CreateJobInput = {
   description: string;
   location: string;
   salary: string;
+  companyId: string;
 };
 
 function required(value: unknown, field: string) {
@@ -24,6 +25,7 @@ export async function getJobs(search?: string) {
       : undefined,
     orderBy: { createdAt: "desc" },
     take: 100,
+    include: { company: true },
   });
 }
 
@@ -32,6 +34,12 @@ export async function createJob(input: CreateJobInput) {
   const description = required(input.description, "Description");
   const location = required(input.location, "Location");
   const salary = required(input.salary, "Salary");
+  const companyId = required(input.companyId, "Company ID");
+  const company = await prisma.companies.findUnique({
+    where: { id: companyId },
+    select: { id: true },
+  });
+  if (!company) throw new Error("Selected company was not found");
 
   return prisma.jobs.create({
     data: {
@@ -39,6 +47,8 @@ export async function createJob(input: CreateJobInput) {
       description,
       location,
       salary,
+      company: { connect: { id: companyId } },
     },
+    include: { company: true },
   });
 }
