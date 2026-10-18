@@ -66,6 +66,7 @@ export default function ApplicationsTable() {
   const [search, setSearch] = useState("");
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [availableJobs, setAvailableJobs] = useState<JobOption[]>([]);
+  const [jobSearch, setJobSearch] = useState("");
   const [selectedJobId, setSelectedJobId] = useState("");
   const [jobsLoading, setJobsLoading] = useState(false);
   const [jobMode, setJobMode] = useState<"existing" | "new">("existing");
@@ -85,12 +86,12 @@ export default function ApplicationsTable() {
 
     const controller = new AbortController();
     async function loadJobs() {
-      setJobsLoading(true);
       setAddError("");
       try {
-        const response = await fetch("/api/protected/jobs", {
-          signal: controller.signal,
-        });
+        const response = await fetch(
+          `/api/protected/jobs?search=${encodeURIComponent(jobSearch)}`,
+          { signal: controller.signal },
+        );
         const data: { jobs?: JobOption[]; error?: string } =
           await response.json();
         if (!response.ok || !data.jobs) {
@@ -109,14 +110,21 @@ export default function ApplicationsTable() {
         setAddError(
           cause instanceof Error ? cause.message : "Unable to load jobs",
         );
+        setAvailableJobs([]);
+        setSelectedJobId("");
       } finally {
         if (!controller.signal.aborted) setJobsLoading(false);
       }
     }
 
-    loadJobs();
-    return () => controller.abort();
-  }, [addModalOpen, jobMode]);
+    setJobsLoading(true);
+    const timeout = setTimeout(loadJobs, 200);
+    return () => {
+      clearTimeout(timeout);
+      controller.abort();
+      setJobsLoading(false);
+    };
+  }, [addModalOpen, jobMode, jobSearch]);
 
   const normalizedSearch = search.trim().toLocaleLowerCase();
   const filteredApplications = applications.filter((application) => {
@@ -147,6 +155,7 @@ export default function ApplicationsTable() {
     setJobMode("existing");
     setNewJob(emptyNewJob);
     setSelectedCompany(null);
+    setJobSearch("");
     setAvailableJobs([]);
     setSelectedJobId("");
     setAddModalOpen(true);
@@ -395,38 +404,52 @@ export default function ApplicationsTable() {
                   </Button>
                 </div>
                 {jobMode === "existing" ? (
-                  jobsLoading ? (
-                    <p className="text-sm text-muted-foreground">
-                      Loading jobs...
-                    </p>
-                  ) : availableJobs.length > 0 ? (
-                    <Select
-                      value={selectedJobId}
-                      onValueChange={(value) => setSelectedJobId(value ?? "")}
-                    >
-                      <SelectTrigger className="w-full">
-                        {(() => {
-                          const selectedJob = availableJobs.find(
-                            (job) => job.id === selectedJobId,
-                          );
-                          return selectedJob
-                            ? `${selectedJob.title} — ${selectedJob.company.name}`
-                            : "Choose a job";
-                        })()}
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availableJobs.map((job) => (
-                          <SelectItem key={job.id} value={job.id}>
-                            {job.title} — {job.company.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">
-                      No jobs are available yet. Select New job to add one.
-                    </p>
-                  )
+                  <div className="space-y-2">
+                    <Input
+                      type="search"
+                      aria-label="Search existing jobs"
+                      placeholder="Search jobs..."
+                      value={jobSearch}
+                      onChange={(event) => {
+                        setJobSearch(event.target.value);
+                        setAddError("");
+                      }}
+                    />
+                    {jobsLoading ? (
+                      <p className="text-sm text-muted-foreground">
+                        Searching jobs...
+                      </p>
+                    ) : availableJobs.length > 0 ? (
+                      <Select
+                        value={selectedJobId}
+                        onValueChange={(value) => setSelectedJobId(value ?? "")}
+                      >
+                        <SelectTrigger className="w-full">
+                          {(() => {
+                            const selectedJob = availableJobs.find(
+                              (job) => job.id === selectedJobId,
+                            );
+                            return selectedJob
+                              ? `${selectedJob.title} — ${selectedJob.company.name}`
+                              : "Choose a job";
+                          })()}
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableJobs.map((job) => (
+                            <SelectItem key={job.id} value={job.id}>
+                              {job.title} — {job.company.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : !addError ? (
+                      <p className="text-sm text-muted-foreground">
+                        {jobSearch.trim()
+                          ? "No jobs match your search."
+                          : "No jobs are available yet. Select New job to add one."}
+                      </p>
+                    ) : null}
+                  </div>
                 ) : (
                   <FieldGroup>
                     <Field>
