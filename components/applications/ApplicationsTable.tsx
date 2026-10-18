@@ -20,16 +20,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { ApplicationStatus } from "@/generated/prisma/enums";
 import type { Application } from "@/types/interview";
 import { Badge } from "../ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger } from "../ui/select";
 import DeleteInterviewModal from "./DeleteApplicationModal";
+import JobAutocomplete, { type JobAutocompleteOption } from "./JobAutocomplete";
 
-type JobOption = {
-  id: string;
-  title: string;
-  company: {
-    name: string;
-  };
-};
+type JobOption = JobAutocompleteOption;
 
 type NewJobForm = {
   title: string;
@@ -87,6 +81,7 @@ export default function ApplicationsTable() {
     const controller = new AbortController();
     async function loadJobs() {
       setAddError("");
+      setAvailableJobs([]);
       try {
         const response = await fetch(
           `/api/protected/jobs?search=${encodeURIComponent(jobSearch)}`,
@@ -99,9 +94,7 @@ export default function ApplicationsTable() {
         }
         setAvailableJobs(data.jobs);
         setSelectedJobId((current) =>
-          data.jobs?.some((job) => job.id === current)
-            ? current
-            : (data.jobs?.[0]?.id ?? ""),
+          data.jobs?.some((job) => job.id === current) ? current : "",
         );
       } catch (cause) {
         if (cause instanceof DOMException && cause.name === "AbortError") {
@@ -405,50 +398,29 @@ export default function ApplicationsTable() {
                 </div>
                 {jobMode === "existing" ? (
                   <div className="space-y-2">
-                    <Input
-                      type="search"
-                      aria-label="Search existing jobs"
+                    <JobAutocomplete
+                      id="existing-job"
+                      label="Search existing jobs"
                       placeholder="Search jobs..."
-                      value={jobSearch}
-                      onChange={(event) => {
-                        setJobSearch(event.target.value);
+                      jobs={availableJobs}
+                      value={
+                        availableJobs.find((job) => job.id === selectedJobId) ??
+                        null
+                      }
+                      inputValue={jobSearch}
+                      loading={jobsLoading}
+                      emptyMessage={
+                        jobSearch.trim()
+                          ? "No jobs match your search."
+                          : "No jobs are available yet. Select New job to add one."
+                      }
+                      onInputValueChange={(value) => {
+                        setJobSearch(value);
+                        setSelectedJobId("");
                         setAddError("");
                       }}
+                      onSelect={(job) => setSelectedJobId(job.id)}
                     />
-                    {jobsLoading ? (
-                      <p className="text-sm text-muted-foreground">
-                        Searching jobs...
-                      </p>
-                    ) : availableJobs.length > 0 ? (
-                      <Select
-                        value={selectedJobId}
-                        onValueChange={(value) => setSelectedJobId(value ?? "")}
-                      >
-                        <SelectTrigger className="w-full">
-                          {(() => {
-                            const selectedJob = availableJobs.find(
-                              (job) => job.id === selectedJobId,
-                            );
-                            return selectedJob
-                              ? `${selectedJob.title} — ${selectedJob.company.name}`
-                              : "Choose a job";
-                          })()}
-                        </SelectTrigger>
-                        <SelectContent>
-                          {availableJobs.map((job) => (
-                            <SelectItem key={job.id} value={job.id}>
-                              {job.title} — {job.company.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : !addError ? (
-                      <p className="text-sm text-muted-foreground">
-                        {jobSearch.trim()
-                          ? "No jobs match your search."
-                          : "No jobs are available yet. Select New job to add one."}
-                      </p>
-                    ) : null}
                   </div>
                 ) : (
                   <FieldGroup>
