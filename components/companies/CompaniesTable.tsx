@@ -317,26 +317,26 @@ export default function CompaniesTable() {
               </Button>
             </div>
           )}
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[36rem] text-sm">
+          <div className="overflow-auto">
+            <table className="w-full text-sm">
               <thead>
                 <tr className="text-left text-muted-foreground">
-                  <th className="pb-2 font-medium">Company</th>
-                  <th className="pb-2 font-medium">Website</th>
-                  <th className="pb-2 font-medium">Jobs</th>
-                  <th className="pb-2 font-medium">Actions</th>
+                  <th className="pb-2">Company</th>
+                  <th className="pb-2">Website</th>
+                  <th className="pb-2">Jobs</th>
+                  <th className="pb-2">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {companies.map((company) => (
                   <tr key={company.id} className="border-t">
-                    <td className="py-3 font-medium">
+                    <td className="py-2 font-medium">
                       <span className="flex items-center gap-2">
                         <Building2 className="size-4 text-muted-foreground" />
                         {company.name}
                       </span>
                     </td>
-                    <td className="py-3">
+                    <td className="py-2">
                       <a
                         className="inline-flex items-center gap-1 text-primary underline-offset-4 hover:underline"
                         href={company.url}
@@ -347,8 +347,8 @@ export default function CompaniesTable() {
                         <ExternalLink className="size-3.5 shrink-0" />
                       </a>
                     </td>
-                    <td className="py-3">{company._count.jobs}</td>
-                    <td className="py-3">
+                    <td className="py-2">{company._count.jobs}</td>
+                    <td className="py-2">
                       <div className="flex gap-2">
                         <Button
                           size="sm"
@@ -374,7 +374,7 @@ export default function CompaniesTable() {
                   <tr>
                     <td
                       colSpan={4}
-                      className="border-t py-10 text-center text-muted-foreground"
+                      className="py-4 text-center text-sm text-muted-foreground"
                     >
                       {search
                         ? "No companies match your search."
@@ -386,7 +386,7 @@ export default function CompaniesTable() {
                   <tr>
                     <td
                       colSpan={4}
-                      className="border-t py-10 text-center text-muted-foreground"
+                      className="py-4 text-center text-sm text-muted-foreground"
                     >
                       Loading companies...
                     </td>
