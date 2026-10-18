@@ -15,6 +15,7 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import JobAutocomplete from "./JobAutocomplete";
 
 type Interview = {
   id: string;
@@ -88,6 +89,7 @@ export default function ApplicationDetails({ id }: { id: string }) {
   const [error, setError] = useState("");
   const [jobs, setJobs] = useState<Job[]>([]);
   const [jobSearch, setJobSearch] = useState("");
+  const [jobsLoading, setJobsLoading] = useState(false);
   const [jobMode, setJobMode] = useState<"existing" | "new">("existing");
   const [selectedJobId, setSelectedJobId] = useState("");
   const [selectedCompany, setSelectedCompany] = useState<CompanyOption | null>(
@@ -133,27 +135,43 @@ export default function ApplicationDetails({ id }: { id: string }) {
   useEffect(() => {
     if (jobMode !== "existing") return;
     const controller = new AbortController();
-    fetch(`/api/protected/jobs?search=${encodeURIComponent(jobSearch)}`, {
-      signal: controller.signal,
-    })
-      .then(async (response) => {
+    async function loadJobs() {
+      setJobsLoading(true);
+      setJobs([]);
+      try {
+        const response = await fetch(
+          `/api/protected/jobs?search=${encodeURIComponent(jobSearch)}`,
+          { signal: controller.signal },
+        );
         if (!response.ok) throw new Error("Unable to load jobs");
-        const data = await response.json();
+        const data: { jobs?: Job[] } = await response.json();
         setJobs(data.jobs ?? []);
-      })
-      .catch((cause: unknown) => {
-        if (cause instanceof DOMException && cause.name === "AbortError")
+      } catch (cause) {
+        if (cause instanceof DOMException && cause.name === "AbortError") {
           return;
+        }
         setError(
           cause instanceof Error ? cause.message : "Unable to load jobs",
         );
-      });
-    return () => controller.abort();
+      } finally {
+        if (!controller.signal.aborted) setJobsLoading(false);
+      }
+    }
+    loadJobs();
+    return () => {
+      controller.abort();
+      setJobsLoading(false);
+    };
   }, [jobMode, jobSearch]);
 
   function setValue(name: string, value: string) {
     setForm((current) => ({ ...current, [name]: value }));
   }
+  const selectedJob =
+    jobs.find((job) => job.id === selectedJobId) ??
+    (application?.job.id === selectedJobId && application
+      ? { ...application.job, company: application.company }
+      : null);
   async function saveApplication(event: React.FormEvent) {
     event.preventDefault();
     setSaving(true);
@@ -385,49 +403,35 @@ export default function ApplicationDetails({ id }: { id: string }) {
               </div>
             </div>
             {jobMode === "existing" ? (
-              <FieldSet>
-                <Field>
-                  <FieldLabel htmlFor="job-search">Search jobs</FieldLabel>
-                  <Input
-                    id="job-search"
-                    placeholder="Search title or salary"
-                    value={jobSearch}
-                    onChange={(event) => setJobSearch(event.target.value)}
-                  />
-                </Field>
-                <div className="max-h-64 space-y-2 overflow-y-auto">
-                  {jobs.map((job) => (
-                    <button
-                      className={`w-full rounded-lg border p-3 text-left transition-colors ${selectedJobId === job.id ? "border-primary bg-primary/10" : "hover:bg-muted"}`}
-                      key={job.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedJobId(job.id);
-                        setSelectedCompany(job.company);
-                        setForm((current) => ({
-                          ...current,
-                          title: job.title,
-                          description: job.description,
-                          location: job.location,
-                          salary: job.salary,
-                        }));
-                      }}
-                    >
-                      <span className="block font-medium">
-                        {job.title} — {job.company.name}
-                      </span>
-                      <span className="block text-sm text-muted-foreground">
-                        {job.salary}
-                      </span>
-                    </button>
-                  ))}
-                  {jobs.length === 0 && (
-                    <p className="text-sm text-muted-foreground">
-                      No jobs found.
-                    </p>
-                  )}
-                </div>
-              </FieldSet>
+              <Field>
+                <FieldLabel htmlFor="job-search">Existing job</FieldLabel>
+                <JobAutocomplete
+                  id="job-search"
+                  label="Search existing jobs"
+                  placeholder="Search title, company, or salary..."
+                  jobs={jobs}
+                  value={selectedJob}
+                  inputValue={jobSearch}
+                  loading={jobsLoading}
+                  emptyMessage="No jobs found."
+                  getDescription={(job) => job.salary}
+                  onInputValueChange={(value) => {
+                    setJobSearch(value);
+                    setSelectedJobId("");
+                  }}
+                  onSelect={(job) => {
+                    setSelectedJobId(job.id);
+                    setSelectedCompany(job.company);
+                    setForm((current) => ({
+                      ...current,
+                      title: job.title,
+                      description: job.description,
+                      location: job.location,
+                      salary: job.salary,
+                    }));
+                  }}
+                />
+              </Field>
             ) : (
               <FieldSet>
                 <Field>
