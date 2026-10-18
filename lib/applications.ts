@@ -310,12 +310,23 @@ export async function updateApplicationDetail(
 }
 
 export type CreateApplicationInput = {
-  jobId: string;
   status?: ApplicationStatus;
   appliedAt?: Date | string | null;
   closedAt?: Date | string | null;
   notes?: string | null;
-};
+} & (
+  | { jobId: string; newJob?: never }
+  | {
+      jobId?: never;
+      newJob: {
+        title: string;
+        description: string;
+        location: string;
+        salary: string;
+        companyId: string;
+      };
+    }
+);
 
 export type UpdateApplicationInput = Partial<CreateApplicationInput>;
 
@@ -348,19 +359,49 @@ export async function createApplication(
   userId: string,
   data: CreateApplicationInput,
 ) {
-  const jobId = nonEmpty(data.jobId, "Job ID");
-  const job = await prisma.jobs.findFirst({
-    where: { id: jobId, deletedAt: null },
-    include: { company: true },
-  });
-  if (!job) throw new Error("Selected job was not found");
+  const jobId = data.jobId ? nonEmpty(data.jobId, "Job ID") : null;
+  const newJob = data.newJob;
+  if (Boolean(jobId) === Boolean(newJob)) {
+    throw new Error("Choose an existing job or provide a new job");
+  }
+
+  const existingJob = jobId
+    ? await prisma.jobs.findFirst({
+        where: { id: jobId, deletedAt: null },
+        include: { company: true },
+      })
+    : null;
+  if (jobId && !existingJob) throw new Error("Selected job was not found");
+
   const profileId = await getOrCreateProfileId(userId);
 
   const created = await prisma.$transaction(async (tx) => {
+    let job = existingJob;
+    if (newJob) {
+      const companyId = nonEmpty(newJob.companyId, "Company ID");
+      const company = await tx.companies.findUnique({
+        where: { id: companyId },
+      });
+      if (!company || company.deletedAt) {
+        throw new Error("Selected company was not found");
+      }
+      job = await tx.jobs.create({
+        data: {
+          title: nonEmpty(newJob.title, "Title"),
+          description: nonEmpty(newJob.description, "Description"),
+          location: nonEmpty(newJob.location, "Location"),
+          salary: nonEmpty(newJob.salary, "Salary"),
+          company: { connect: { id: companyId } },
+        },
+        include: { company: true },
+      });
+    }
+    if (!job) throw new Error("Selected job was not found");
+
     const application = await tx.applications.create({
       data: {
         profileId,
-        jobId,
+        jobId: job.id,
         status: toApplicationStatus(data.status),
         appliedAt: data.appliedAt ? new Date(data.appliedAt) : null,
         closedAt: data.closedAt ? new Date(data.closedAt) : null,
@@ -369,7 +410,7 @@ export async function createApplication(
     });
 
     const changes = {
-      jobId: { before: null, after: jobId },
+      jobId: { before: null, after: job.id },
       company: { before: null, after: job.company.name },
       status: { before: null, after: application.status },
       appliedAt: { before: null, after: application.appliedAt },

@@ -12,6 +12,25 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+type NewJobInput = {
+  title: string;
+  description: string;
+  location: string;
+  salary: string;
+  companyId: string;
+};
+
+function isNewJob(value: unknown): value is NewJobInput {
+  return (
+    isRecord(value) &&
+    typeof value.title === "string" &&
+    typeof value.description === "string" &&
+    typeof value.location === "string" &&
+    typeof value.salary === "string" &&
+    typeof value.companyId === "string"
+  );
+}
+
 function isApplicationStatus(value: unknown): value is ApplicationStatus {
   return Object.values(ApplicationStatus).some((status) => status === value);
 }
@@ -47,7 +66,18 @@ export async function POST(request: Request) {
 
   const jobId =
     typeof parsedBody.jobId === "string" ? parsedBody.jobId.trim() : "";
-  if (!jobId) return badRequestResponse("Job ID is required");
+  const newJobProvided = parsedBody.newJob !== undefined;
+  if (Boolean(jobId) === newJobProvided) {
+    return badRequestResponse("Choose an existing job or provide a new job");
+  }
+
+  let newJob: NewJobInput | undefined;
+  if (newJobProvided) {
+    if (!isNewJob(parsedBody.newJob)) {
+      return badRequestResponse("New job fields must be strings");
+    }
+    newJob = parsedBody.newJob;
+  }
 
   const status = parsedBody.status ?? ApplicationStatus.DRAFT;
   if (!isApplicationStatus(status)) {
@@ -74,13 +104,20 @@ export async function POST(request: Request) {
   }
 
   try {
-    const application = await createApplication(session.id, {
-      jobId,
+    const common = {
       status,
       appliedAt,
       closedAt,
       notes: parsedBody.notes ?? null,
-    });
+    };
+    let application: Awaited<ReturnType<typeof createApplication>>;
+    if (jobId) {
+      application = await createApplication(session.id, { jobId, ...common });
+    } else if (newJob) {
+      application = await createApplication(session.id, { newJob, ...common });
+    } else {
+      return badRequestResponse("New job data is required");
+    }
     return jsonResponse({ application }, RESPONSE_CODES.CREATED);
   } catch (error) {
     return badRequestResponse(
