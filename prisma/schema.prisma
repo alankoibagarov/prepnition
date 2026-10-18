@@ -58,8 +58,6 @@ model Applications {
   candidateProfile  CandidateProfiles   @relation(fields: [profileId], references: [id], onDelete: Cascade)
   jobId String
   job Jobs @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  companyId String
-  company Companies @relation(fields: [companyId], references: [id], onDelete: Restrict)
 
   status      ApplicationStatus @default(DRAFT)
 
@@ -79,7 +77,6 @@ model Applications {
 
   @@index([profileId])
   @@index([jobId])
-  @@index([companyId])
   @@index([deletedAt])
 }
 
@@ -122,10 +119,14 @@ model Jobs {
   description String
   location String
   salary String
+  companyId String
+  company Companies @relation(fields: [companyId], references: [id], onDelete: Restrict)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   applications Applications[]
+
+  @@index([companyId])
 }
 
 model Companies {
@@ -133,7 +134,7 @@ model Companies {
   name String
   url String
 
-  applications Applications[]
+  jobs Jobs[]
 }
 
 model ApplicationHistory {

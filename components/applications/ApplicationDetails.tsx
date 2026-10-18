@@ -54,6 +54,7 @@ type Job = {
   description: string;
   location: string;
   salary: string;
+  company: CompanyOption;
 };
 
 const statuses = ["DRAFT", "ACTIVE", "REJECTED", "WITHDRAWN", "OFFER"];
@@ -173,6 +174,7 @@ export default function ApplicationDetails({ id }: { id: string }) {
                   description: form.description,
                   location: form.location,
                   salary: form.salary,
+                  companyId: selectedCompany?.id,
                 },
               }),
         }),
@@ -345,16 +347,15 @@ export default function ApplicationDetails({ id }: { id: string }) {
                   onChange={(event) => setValue("notes", event.target.value)}
                 />
               </Field>
-              <Field>
-                <FieldLabel htmlFor="application-company">Company</FieldLabel>
-                <CompanySelector
-                  id="application-company"
-                  value={selectedCompany}
-                  onChange={setSelectedCompany}
-                />
-              </Field>
             </FieldGroup>
-            <Button type="submit" disabled={saving || !selectedCompany}>
+            <Button
+              type="submit"
+              disabled={
+                saving ||
+                (jobMode === "existing" && !selectedJobId) ||
+                (jobMode === "new" && !selectedCompany)
+              }
+            >
               <Save />
               {saving ? "Saving..." : "Save application"}
             </Button>
@@ -402,6 +403,7 @@ export default function ApplicationDetails({ id }: { id: string }) {
                       type="button"
                       onClick={() => {
                         setSelectedJobId(job.id);
+                        setSelectedCompany(job.company);
                         setForm((current) => ({
                           ...current,
                           title: job.title,
@@ -411,7 +413,9 @@ export default function ApplicationDetails({ id }: { id: string }) {
                         }));
                       }}
                     >
-                      <span className="block font-medium">{job.title}</span>
+                      <span className="block font-medium">
+                        {job.title} — {job.company.name}
+                      </span>
                       <span className="block text-sm text-muted-foreground">
                         {job.salary}
                       </span>
@@ -426,6 +430,14 @@ export default function ApplicationDetails({ id }: { id: string }) {
               </FieldSet>
             ) : (
               <FieldSet>
+                <Field>
+                  <FieldLabel htmlFor="new-job-company">Company</FieldLabel>
+                  <CompanySelector
+                    id="new-job-company"
+                    value={selectedCompany}
+                    onChange={setSelectedCompany}
+                  />
+                </Field>
                 <Field>
                   <FieldLabel>Job title</FieldLabel>
                   <Input

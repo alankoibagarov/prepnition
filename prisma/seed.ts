@@ -16,6 +16,7 @@ const prisma = new PrismaClient({ adapter });
 
 async function seed() {
   await prisma.user.deleteMany();
+  await prisma.jobs.deleteMany();
   await prisma.companies.deleteMany();
 
   const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 10);
@@ -173,7 +174,6 @@ async function seed() {
     id: string;
     title: string;
     companyName: string;
-    companyId: string;
   }[] = [];
 
   for (const company of companySeeds) {
@@ -185,14 +185,20 @@ async function seed() {
     });
 
     const jobs = await Promise.all(
-      company.jobs.map((job) => prisma.jobs.create({ data: { ...job } })),
+      company.jobs.map((job) =>
+        prisma.jobs.create({
+          data: {
+            ...job,
+            company: { connect: { id: created.id } },
+          },
+        }),
+      ),
     );
     for (const job of jobs) {
       createdJobs.push({
         id: job.id,
         title: job.title,
         companyName: created.name,
-        companyId: created.id,
       });
     }
   }
@@ -444,7 +450,6 @@ async function seed() {
       data: {
         profileId: demoProfile.id,
         jobId: job.id,
-        companyId: job.companyId,
         status: seedApp.status,
         appliedAt: seedApp.appliedAt,
         closedAt: seedApp.closedAt,
