@@ -1,8 +1,11 @@
 "use client";
 import { Plus, RefreshCw, TableOfContents, Trash } from "lucide-react";
 import Link from "next/link";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 import { useApplications } from "@/app/hooks/useApplications";
+import CompanySelector, {
+  type CompanyOption,
+} from "@/components/applications/CompanySelector";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Card,
@@ -11,7 +14,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { ApplicationStatus } from "@/generated/prisma/enums";
 import type { Application } from "@/types/interview";
 import { Badge } from "../ui/badge";
@@ -24,6 +29,20 @@ type JobOption = {
   company: {
     name: string;
   };
+};
+
+type NewJobForm = {
+  title: string;
+  description: string;
+  location: string;
+  salary: string;
+};
+
+const emptyNewJob: NewJobForm = {
+  title: "",
+  description: "",
+  location: "",
+  salary: "",
 };
 
 function getNextInterview(application: Application) {
@@ -49,12 +68,56 @@ export default function ApplicationsTable() {
   const [availableJobs, setAvailableJobs] = useState<JobOption[]>([]);
   const [selectedJobId, setSelectedJobId] = useState("");
   const [jobsLoading, setJobsLoading] = useState(false);
+  const [jobMode, setJobMode] = useState<"existing" | "new">("existing");
+  const [newJob, setNewJob] = useState<NewJobForm>(emptyNewJob);
+  const [selectedCompany, setSelectedCompany] = useState<CompanyOption | null>(
+    null,
+  );
   const [creatingApplication, setCreatingApplication] = useState(false);
   const [addError, setAddError] = useState("");
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedForDelete, setSelectedForDelete] = useState<string | null>(
     null,
   );
+
+  useEffect(() => {
+    if (!addModalOpen || jobMode !== "existing") return;
+
+    const controller = new AbortController();
+    async function loadJobs() {
+      setJobsLoading(true);
+      setAddError("");
+      try {
+        const response = await fetch("/api/protected/jobs", {
+          signal: controller.signal,
+        });
+        const data: { jobs?: JobOption[]; error?: string } =
+          await response.json();
+        if (!response.ok || !data.jobs) {
+          throw new Error(data.error ?? "Unable to load jobs");
+        }
+        setAvailableJobs(data.jobs);
+        setSelectedJobId((current) =>
+          data.jobs?.some((job) => job.id === current)
+            ? current
+            : (data.jobs?.[0]?.id ?? ""),
+        );
+      } catch (cause) {
+        if (cause instanceof DOMException && cause.name === "AbortError") {
+          return;
+        }
+        setAddError(
+          cause instanceof Error ? cause.message : "Unable to load jobs",
+        );
+      } finally {
+        if (!controller.signal.aborted) setJobsLoading(false);
+      }
+    }
+
+    loadJobs();
+    return () => controller.abort();
+  }, [addModalOpen, jobMode]);
+
   const normalizedSearch = search.trim().toLocaleLowerCase();
   const filteredApplications = applications.filter((application) => {
     const nextInterview = getNextInterview(application);
@@ -80,31 +143,33 @@ export default function ApplicationsTable() {
     setDeleteModalOpen(true);
   }
 
-  async function openAddModal() {
+  function openAddModal() {
+    setJobMode("existing");
+    setNewJob(emptyNewJob);
+    setSelectedCompany(null);
+    setAvailableJobs([]);
+    setSelectedJobId("");
     setAddModalOpen(true);
-    setJobsLoading(true);
     setAddError("");
-    try {
-      const response = await fetch("/api/protected/jobs");
-      if (!response.ok) throw new Error("Unable to load jobs");
-      const data = await response.json();
-      const jobs = data.jobs as JobOption[];
-      setAvailableJobs(jobs);
-      setSelectedJobId((current) =>
-        jobs.some((job) => job.id === current) ? current : (jobs[0]?.id ?? ""),
-      );
-    } catch (error) {
-      setAddError(
-        error instanceof Error ? error.message : "Unable to load jobs",
-      );
-    } finally {
-      setJobsLoading(false);
-    }
   }
 
   async function createApplication(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!selectedJobId) return;
+    let requestBody:
+      | { jobId: string }
+      | { newJob: NewJobForm & { companyId: string } };
+    if (jobMode === "existing") {
+      if (!selectedJobId) return;
+      requestBody = { jobId: selectedJobId };
+    } else {
+      if (!selectedCompany) {
+        setAddError("Choose a company for this job");
+        return;
+      }
+      requestBody = {
+        newJob: { ...newJob, companyId: selectedCompany.id },
+      };
+    }
 
     setCreatingApplication(true);
     setAddError("");
@@ -112,7 +177,7 @@ export default function ApplicationsTable() {
       const response = await fetch("/api/protected/applications", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ jobId: selectedJobId }),
+        body: JSON.stringify(requestBody),
       });
       if (!response.ok) {
         const data = await response.json().catch(() => null);
@@ -300,47 +365,144 @@ export default function ApplicationsTable() {
             onClick={() => setAddModalOpen(false)}
             aria-label="Close dialog"
           />
-          <Card className="z-50 mx-4 w-full max-w-lg">
+          <Card className="z-50 mx-4 max-h-[90vh] w-full max-w-2xl overflow-y-auto">
             <CardHeader>
               <CardTitle id="add-application-title">Add application</CardTitle>
               <CardDescription>
-                Choose a job to start tracking an application. Its company is
-                set automatically.
+                Choose an existing job or create a new job to start tracking an
+                application.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={createApplication} className="space-y-4">
-                {jobsLoading ? (
-                  <p className="text-sm text-muted-foreground">
-                    Loading jobs...
-                  </p>
-                ) : availableJobs.length > 0 ? (
-                  <Select
-                    value={selectedJobId}
-                    onValueChange={(value) => setSelectedJobId(value ?? "")}
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant={jobMode === "existing" ? "default" : "outline"}
+                    onClick={() => setJobMode("existing")}
                   >
-                    <SelectTrigger className="w-full">
-                      {(() => {
-                        const selectedJob = availableJobs.find(
-                          (job) => job.id === selectedJobId,
-                        );
-                        return selectedJob
-                          ? `${selectedJob.title} — ${selectedJob.company.name}`
-                          : "Choose a job";
-                      })()}
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableJobs.map((job) => (
-                        <SelectItem key={job.id} value={job.id}>
-                          {job.title} — {job.company.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    Existing job
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={jobMode === "new" ? "default" : "outline"}
+                    onClick={() => {
+                      setAddError("");
+                      setJobMode("new");
+                    }}
+                  >
+                    New job
+                  </Button>
+                </div>
+                {jobMode === "existing" ? (
+                  jobsLoading ? (
+                    <p className="text-sm text-muted-foreground">
+                      Loading jobs...
+                    </p>
+                  ) : availableJobs.length > 0 ? (
+                    <Select
+                      value={selectedJobId}
+                      onValueChange={(value) => setSelectedJobId(value ?? "")}
+                    >
+                      <SelectTrigger className="w-full">
+                        {(() => {
+                          const selectedJob = availableJobs.find(
+                            (job) => job.id === selectedJobId,
+                          );
+                          return selectedJob
+                            ? `${selectedJob.title} — ${selectedJob.company.name}`
+                            : "Choose a job";
+                        })()}
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableJobs.map((job) => (
+                          <SelectItem key={job.id} value={job.id}>
+                            {job.title} — {job.company.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">
+                      No jobs are available yet. Select New job to add one.
+                    </p>
+                  )
                 ) : (
-                  <p className="text-sm text-muted-foreground">
-                    No jobs are available yet.
-                  </p>
+                  <FieldGroup>
+                    <Field>
+                      <FieldLabel htmlFor="new-application-company">
+                        Company
+                      </FieldLabel>
+                      <CompanySelector
+                        id="new-application-company"
+                        value={selectedCompany}
+                        onChange={setSelectedCompany}
+                      />
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="new-application-title">
+                        Job title
+                      </FieldLabel>
+                      <Input
+                        id="new-application-title"
+                        required
+                        value={newJob.title}
+                        onChange={(event) =>
+                          setNewJob({ ...newJob, title: event.target.value })
+                        }
+                      />
+                    </Field>
+                    <Field>
+                      <FieldLabel htmlFor="new-application-description">
+                        Description
+                      </FieldLabel>
+                      <Textarea
+                        id="new-application-description"
+                        required
+                        value={newJob.description}
+                        onChange={(event) =>
+                          setNewJob({
+                            ...newJob,
+                            description: event.target.value,
+                          })
+                        }
+                      />
+                    </Field>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <Field>
+                        <FieldLabel htmlFor="new-application-location">
+                          Location
+                        </FieldLabel>
+                        <Input
+                          id="new-application-location"
+                          required
+                          value={newJob.location}
+                          onChange={(event) =>
+                            setNewJob({
+                              ...newJob,
+                              location: event.target.value,
+                            })
+                          }
+                        />
+                      </Field>
+                      <Field>
+                        <FieldLabel htmlFor="new-application-salary">
+                          Salary
+                        </FieldLabel>
+                        <Input
+                          id="new-application-salary"
+                          required
+                          value={newJob.salary}
+                          onChange={(event) =>
+                            setNewJob({
+                              ...newJob,
+                              salary: event.target.value,
+                            })
+                          }
+                        />
+                      </Field>
+                    </div>
+                  </FieldGroup>
                 )}
                 {addError && (
                   <p className="text-sm text-destructive">{addError}</p>
@@ -356,10 +518,11 @@ export default function ApplicationsTable() {
                   <Button
                     type="submit"
                     disabled={
-                      jobsLoading ||
+                      (jobMode === "existing" && jobsLoading) ||
                       creatingApplication ||
-                      !selectedJobId ||
-                      availableJobs.length === 0
+                      (jobMode === "existing" &&
+                        (!selectedJobId || availableJobs.length === 0)) ||
+                      (jobMode === "new" && !selectedCompany)
                     }
                   >
                     {creatingApplication ? "Adding..." : "Add application"}
