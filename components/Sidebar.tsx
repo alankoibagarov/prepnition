@@ -111,7 +111,7 @@ export default function Sidebar({ session }: { session: AuthUser }) {
                     <Link
                       key={it.href}
                       href={it.href}
-                      className={`flex items-center gap-3 rounded-md py-2 pl-11 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-sidebar-ring transition-colors ${
+                      className={`flex items-center gap-3 rounded-md py-2 pl-6 pr-3 text-sm focus:outline-none focus:ring-1 focus:ring-sidebar-ring transition-colors ${
                         active
                           ? "bg-sidebar-primary text-sidebar-primary-foreground"
                           : "text-sidebar-foreground hover:bg-sidebar-accent/40"
